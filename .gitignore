@@ -1,0 +1,17 @@
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+*.dll
+*.so
+*.bin
+*.pt
+*.pth
+.cache/
+*.onnx
+sentence_transformers/
+huggingface_hub/
+.env
+Thumbs.db
+.DS_Store
+.env.example

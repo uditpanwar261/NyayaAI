@@ -1,0 +1,2220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NyayaAI — AI-Powered Legal Document Generator for India</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+<style>
+/* ═══ DESIGN TOKENS ═══ */
+:root {
+  --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--bg4:#212636;--bg5:#272d3e;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--border3:rgba(255,255,255,0.18);
+  --gold:#c9a84c;--gold2:#e8c97a;--gold3:#f5dfa0;
+  --gold-dim:rgba(201,168,76,0.12);--gold-glow:rgba(201,168,76,0.25);--gold-border:rgba(201,168,76,0.3);
+  --text:#f0eee8;--text2:#9a9690;--text3:#5a5752;--text4:#3a3735;
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,0.1);--green-border:rgba(62,207,142,0.25);
+  --red:#e8534a;--red-dim:rgba(232,83,74,0.1);--red-border:rgba(232,83,74,0.25);
+  --blue:#5b8cf7;--blue-dim:rgba(91,140,247,0.1);--blue-border:rgba(91,140,247,0.25);
+  --purple:#9b59f5;--purple-dim:rgba(155,89,245,0.1);
+  --sidebar-w:242px;
+  --radius:10px;--radius-sm:7px;--radius-lg:14px;
+  --shadow:0 4px 24px rgba(0,0,0,0.3);--shadow-lg:0 8px 40px rgba(0,0,0,0.5);
+  --transition:all 0.18s ease;
+}
+
+/* ═══ RESET & BASE ═══ */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;}
+input,select,textarea{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ═══ LAYOUT ═══ */
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:var(--transition);flex-shrink:0;}
+.main-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;background:var(--bg);position:relative;z-index:10;}
+.page{flex:1;overflow-y:auto;padding:22px 22px 32px;}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar-logo{padding:18px 16px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo-row{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#c9a84c,#8b6914);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:#fff;flex-shrink:0;}
+.logo-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--text);}
+.logo-name span{color:var(--gold);}
+.logo-tagline{font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px;}
+.nav-section{padding:12px 8px 4px;}
+.nav-label{font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text2);transition:var(--transition);border:1px solid transparent;user-select:none;position:relative;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold-border);}
+.nav-item svg{width:15px;height:15px;opacity:0.6;flex-shrink:0;}
+.nav-item.active svg{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--gold);color:#0d0f14;font-size:9px;font-weight:600;padding:1px 6px;border-radius:10px;line-height:1.4;}
+.sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border);flex-shrink:0;}
+.user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);}
+.user-card:hover{background:var(--bg3);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#6b4f10);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#fff;flex-shrink:0;border:2px solid rgba(201,168,76,0.3);}
+.user-name{font-size:12.5px;color:var(--text);line-height:1.2;}
+.user-plan{font-size:10.5px;color:var(--gold);}
+.usage-mini{padding:8px 10px 4px;}
+.usage-label-row{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);margin-bottom:4px;}
+.usage-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.usage-fill{height:100%;border-radius:2px;background:var(--gold);transition:width 1s ease;}
+.usage-fill.warn{background:var(--red);}
+
+/* ═══ TOPBAR ═══ */
+.topbar-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:500;color:var(--text);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.rag-pill{display:inline-flex;align-items:center;gap:5px;background:var(--blue-dim);border:1px solid var(--blue-border);color:var(--blue);font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.rag-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;border:none;transition:var(--transition);font-weight:400;white-space:nowrap;}
+.btn svg{width:13px;height:13px;flex-shrink:0;}
+.btn-gold{background:var(--gold);color:#0d0f14;font-weight:500;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.btn-danger:hover{background:rgba(232,83,74,0.18);}
+.btn-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+.btn-sm{padding:5px 10px;font-size:11.5px;}
+.btn-xs{padding:3px 8px;font-size:10.5px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.icon-btn{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:var(--transition);}
+.icon-btn:hover{color:var(--text);border-color:var(--border2);}
+.icon-btn svg{width:15px;height:15px;}
+
+/* ═══ CARDS & SURFACES ═══ */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);}
+.surface{background:var(--bg3);border-radius:var(--radius-sm);}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+
+/* ═══ FORMS ═══ */
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:11px;color:var(--text3);letter-spacing:0.02em;}
+.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;font-size:13px;color:var(--text);outline:none;transition:var(--transition);width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold-border);box-shadow:0 0 0 2px rgba(201,168,76,0.08);}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3);}
+.field select option{background:var(--bg3);}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid .full{grid-column:1/-1;}
+
+/* ═══ BADGES & PILLS ═══ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:500;}
+.badge-green{background:var(--green-dim);color:var(--green);}
+.badge-gold{background:var(--gold-dim);color:var(--gold2);}
+.badge-blue{background:var(--blue-dim);color:var(--blue);}
+.badge-red{background:var(--red-dim);color:var(--red);}
+.badge-purple{background:var(--purple-dim);color:var(--purple);}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pill-done{background:var(--green-dim);color:var(--green);}
+.pill-draft{background:var(--blue-dim);color:var(--blue);}
+.pill-review{background:var(--gold-dim);color:var(--gold2);}
+
+/* ═══ STAT CARDS ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;transition:border-color 0.2s;}
+.stat-card:hover{border-color:var(--border2);}
+.stat-lbl{font-size:10.5px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;}
+.stat-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:500;color:var(--text);line-height:1;}
+.stat-val.gold{color:var(--gold2);}
+.stat-meta{font-size:11px;color:var(--text3);margin-top:4px;}
+.stat-up{color:var(--green);}
+
+/* ═══ TABLE ═══ */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.table-head{display:grid;padding:10px 18px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);gap:10px;}
+.table-row{display:grid;padding:11px 18px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);align-items:center;gap:10px;transition:background 0.1s;cursor:pointer;}
+.table-row:hover{background:var(--bg3);}
+.table-row:last-child{border-bottom:none;}
+.td-name{color:var(--text);font-size:13px;}
+
+/* ═══ ACTIVITY ═══ */
+.activity-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border-bottom:none;}
+.act-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+
+/* ═══ QUICK ACTIONS ═══ */
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.qa-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:10px;}
+.qa-card:hover{border-color:var(--gold-border);background:var(--gold-dim);}
+.qa-icon{width:30px;height:30px;background:var(--gold-dim);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.qa-text{font-size:12.5px;color:var(--text);}
+.qa-sub{font-size:10.5px;color:var(--text3);margin-top:1px;}
+
+/* ═══ GENERATOR LAYOUT ═══ */
+.gen-layout{display:grid;grid-template-columns:290px 1fr;gap:16px;height:calc(100vh - 98px);}
+.gen-left{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-bottom:8px;}
+.gen-right{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.template-list{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;}
+.tpl-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:12.5px;color:var(--text2);}
+.tpl-chip:hover{border-color:var(--border2);color:var(--text);}
+.tpl-chip.active{border-color:var(--gold);background:var(--gold-dim);color:var(--gold2);}
+.tpl-chip-label{font-size:9.5px;margin-left:auto;color:var(--text3);}
+.tpl-chip.active .tpl-chip-label{color:var(--gold);}
+
+/* ═══ PREVIEW PANEL ═══ */
+.preview-bar{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.preview-tab{padding:4px 11px;border-radius:5px;font-size:12px;cursor:pointer;color:var(--text3);border:1px solid transparent;transition:var(--transition);}
+.preview-tab.active{background:var(--bg4);color:var(--text);border-color:var(--border);}
+.preview-tab:hover:not(.active){color:var(--text2);}
+.preview-actions{margin-left:auto;display:flex;gap:6px;}
+.preview-body{flex:1;overflow-y:auto;padding:28px 34px;}
+.doc-paper{background:#fff;color:#111;border-radius:8px;padding:40px 46px;font-family:'Georgia',serif;font-size:13px;line-height:1.85;max-width:640px;margin:0 auto;min-height:500px;position:relative;box-shadow:0 4px 28px rgba(0,0,0,0.25);}
+.doc-paper h1{font-size:16px;text-align:center;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;color:#111;}
+.doc-subtitle{text-align:center;font-size:11.5px;color:#777;margin-bottom:22px;}
+.doc-paper p{margin-bottom:10px;color:#222;font-size:13px;}
+.doc-section{font-weight:700;margin-top:18px;margin-bottom:5px;text-decoration:underline;font-size:13px;color:#111;}
+.doc-blank{background:#fef9ec;border-bottom:1.5px solid #c9a84c;padding:0 3px;color:#c9a84c;font-style:italic;border-radius:2px;font-size:12.5px;}
+.doc-stamp{position:absolute;bottom:40px;right:40px;width:78px;height:78px;border:3px solid rgba(201,168,76,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;color:rgba(201,168,76,0.4);font-size:8.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:1.3;transform:rotate(-15deg);font-family:'DM Sans',sans-serif;}
+.gen-overlay{position:absolute;inset:0;background:rgba(13,15,20,0.9);z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;border-radius:var(--radius);backdrop-filter:blur(3px);}
+.gen-status-title{font-size:14px;color:var(--gold2);font-weight:500;}
+.gen-status-sub{font-size:12px;color:var(--text2);}
+
+/* ═══ CLAUSE EDITOR ═══ */
+.clause-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;transition:border-color 0.15s;}
+.clause-item:hover{border-color:var(--border2);}
+.clause-item.risk-high{border-left:3px solid var(--red);}
+.clause-item.risk-medium{border-left:3px solid var(--gold);}
+.clause-item.risk-low{border-left:3px solid var(--green);}
+.clause-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px;}
+.clause-title-text{font-size:12.5px;font-weight:500;color:var(--text);flex:1;}
+.clause-body{font-size:12px;color:var(--text2);line-height:1.65;}
+.clause-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.clause-explain-box{background:var(--bg2);border:1px solid var(--gold-border);border-radius:5px;padding:10px 12px;margin-top:8px;font-size:12px;color:var(--text2);line-height:1.6;display:none;}
+.clause-explain-box.show{display:block;}
+
+/* ═══ RISK PANEL ═══ */
+.risk-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.risk-item:last-child{border-bottom:none;}
+.risk-title{font-size:12.5px;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+.risk-desc{font-size:11.5px;color:var(--text3);line-height:1.55;}
+
+/* ═══ CHAT ═══ */
+.chat-layout{display:grid;grid-template-columns:1fr 300px;gap:16px;height:calc(100vh - 98px);}
+.chat-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.chat-avatar{width:30px;height:30px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:'Playfair Display',serif;font-size:13px;flex-shrink:0;}
+.online-dot{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;margin-right:3px;}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 15px;display:flex;flex-direction:column;gap:12px;}
+.msg{display:flex;gap:8px;max-width:88%;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.msg-av.ai{background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-border);}
+.msg-av.user{background:var(--bg4);color:var(--text2);}
+.msg-bubble{padding:9px 12px;border-radius:9px;font-size:13px;line-height:1.6;}
+.msg.ai .msg-bubble{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-top-left-radius:3px;}
+.msg.user .msg-bubble{background:var(--gold-dim);color:var(--text);border:1px solid var(--gold-border);border-top-right-radius:3px;}
+.msg-time{font-size:10px;color:var(--text3);margin-top:3px;padding:0 2px;}
+.msg.user .msg-time{text-align:right;}
+.chat-footer{padding:10px 13px;border-top:1px solid var(--border);flex-shrink:0;}
+.chips-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.chip{padding:3px 9px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text3);cursor:pointer;transition:var(--transition);}
+.chip:hover{border-color:var(--gold-border);color:var(--gold2);background:var(--gold-dim);}
+.chat-input-row{display:flex;gap:7px;align-items:flex-end;}
+.chat-textarea{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:none;height:38px;outline:none;transition:var(--transition);}
+.chat-textarea:focus{border-color:var(--gold-border);}
+.send-btn{width:36px;height:36px;background:var(--gold);border:none;border-radius:var(--radius-sm);color:#0d0f14;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s;}
+.send-btn:hover{background:var(--gold2);}
+.send-btn svg{width:15px;height:15px;}
+.typing-dots{display:flex;gap:3px;align-items:center;padding:3px 0;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:bounce 1.2s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:0.2s;}
+.td:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* ═══ TEMPLATES GRID ═══ */
+.templates-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.tpl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:17px;cursor:pointer;transition:var(--transition);}
+.tpl-card:hover{border-color:var(--gold-border);transform:translateY(-2px);box-shadow:var(--shadow);}
+.tpl-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;}
+.tpl-name{font-size:13px;color:var(--text);margin-bottom:3px;}
+.tpl-desc{font-size:11.5px;color:var(--text3);line-height:1.5;}
+.tpl-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+
+/* ═══ DOCUMENTS GRID ═══ */
+.docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.doc-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;}
+.doc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent);opacity:0;transition:opacity 0.2s;}
+.doc-card:hover{border-color:var(--gold-border);transform:translateY(-2px);}
+.doc-card:hover::before{opacity:1;}
+.doc-type-badge{font-size:9.5px;letter-spacing:0.07em;text-transform:uppercase;padding:2px 7px;border-radius:4px;font-weight:500;}
+.doc-type-prop{background:var(--blue-dim);color:var(--blue);}
+.doc-type-biz{background:var(--gold-dim);color:var(--gold2);}
+.doc-type-emp{background:var(--green-dim);color:var(--green);}
+.doc-type-legal{background:var(--red-dim);color:var(--red);}
+.doc-name{font-size:13px;color:var(--text);margin:8px 0 3px;line-height:1.4;}
+.doc-meta{font-size:11px;color:var(--text3);margin-bottom:10px;}
+.doc-actions{display:flex;gap:5px;align-items:center;padding-top:10px;border-top:1px solid var(--border);}
+
+/* ═══ KB GRID ═══ */
+.kb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.kb-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px;transition:border-color 0.15s;cursor:pointer;}
+.kb-card:hover{border-color:var(--border2);}
+.kb-icon{font-size:20px;margin-bottom:8px;}
+.kb-title{font-size:13px;color:var(--text);margin-bottom:3px;}
+.kb-desc{font-size:11.5px;color:var(--text3);line-height:1.5;}
+.kb-count{font-size:10.5px;color:var(--gold2);margin-top:7px;}
+
+/* ═══ ADMIN ═══ */
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.admin-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+.admin-stat-val{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold2);margin-bottom:2px;}
+.admin-stat-lbl{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;}
+
+/* ═══ PROFILE & SETTINGS ═══ */
+.profile-layout{display:grid;grid-template-columns:250px 1fr;gap:18px;}
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;text-align:center;}
+.profile-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#6b4f10);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:24px;color:#fff;margin:0 auto 12px;border:3px solid var(--gold-border);}
+.profile-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);margin-bottom:3px;}
+.profile-role{font-size:12px;color:var(--text3);margin-bottom:12px;}
+.profile-stats{display:flex;justify-content:space-around;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:14px -22px;padding:12px 22px;}
+.ps-val{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold2);text-align:center;}
+.ps-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;text-align:center;}
+.settings-layout{display:grid;grid-template-columns:180px 1fr;gap:18px;}
+.settings-nav{display:flex;flex-direction:column;gap:3px;}
+.sn-item{padding:8px 11px;border-radius:var(--radius-sm);font-size:12.5px;color:var(--text2);cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:7px;border:1px solid transparent;}
+.sn-item:hover{background:var(--bg3);color:var(--text);}
+.sn-item.active{background:var(--gold-dim);color:var(--gold2);border-color:var(--gold-border);}
+.sn-item svg{width:13px;height:13px;opacity:0.7;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;padding-bottom:0;}
+.setting-lbl{font-size:13px;color:var(--text);display:block;margin-bottom:2px;}
+.setting-desc{font-size:11.5px;color:var(--text3);line-height:1.4;max-width:340px;}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--bg4);border:1px solid var(--border2);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;}
+.toggle.on{background:var(--gold);border-color:var(--gold);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.toggle.on::after{transform:translateX(18px);}
+
+/* ═══ PRICING ═══ */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.plan-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 20px;position:relative;}
+.plan-card.featured{border-color:var(--gold-border);background:linear-gradient(160deg,rgba(201,168,76,0.05),var(--bg2) 60%);}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0d0f14;font-size:9.5px;font-weight:600;padding:3px 14px;border-radius:20px;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+.plan-name{font-family:'Playfair Display',serif;font-size:19px;color:var(--text);margin-bottom:3px;}
+.plan-desc{font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5;}
+.plan-price{margin-bottom:5px;}
+.plan-amount{font-family:'Playfair Display',serif;font-size:32px;font-weight:500;color:var(--text);}
+.plan-amount.gold{color:var(--gold2);}
+.plan-currency{font-size:17px;color:var(--text2);vertical-align:top;margin-top:6px;display:inline-block;}
+.plan-period{font-size:12.5px;color:var(--text3);}
+.plan-divider{height:1px;background:var(--border);margin:14px 0;}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+.plan-features li{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--text2);line-height:1.4;}
+.feat-y{color:var(--green);flex-shrink:0;}
+.feat-n{color:var(--text3);flex-shrink:0;}
+.plan-btn{width:100%;padding:9px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:var(--transition);border:1px solid var(--border2);background:transparent;color:var(--text2);}
+.plan-btn:hover{background:var(--bg3);color:var(--text);}
+.plan-btn.gold{background:var(--gold);color:#0d0f14;border-color:transparent;font-weight:500;}
+.plan-btn.gold:hover{background:var(--gold2);}
+
+/* ═══ MODALS ═══ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:28px 32px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.modal-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);margin-bottom:18px;}
+.auth-modal{width:400px;}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;gap:0;margin-bottom:18px;}
+.auth-tab{flex:1;text-align:center;padding:6px;border-radius:5px;font-size:12.5px;cursor:pointer;color:var(--text3);transition:var(--transition);}
+.auth-tab.active{background:var(--bg2);color:var(--text);}
+.auth-submit{width:100%;padding:10px;background:var(--gold);border:none;border-radius:var(--radius-sm);color:#0d0f14;font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.15s;margin-top:2px;}
+.auth-submit:hover{background:var(--gold2);}
+.auth-divider{text-align:center;color:var(--text3);font-size:11.5px;margin:12px 0;position:relative;}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border);}
+.auth-divider::before{left:0;}.auth-divider::after{right:0;}
+.google-btn{width:100%;padding:9px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;}
+.google-btn:hover{background:var(--bg3);color:var(--text);}
+
+/* ═══ PROGRESS / SPINNERS ═══ */
+.progress-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 0.4s ease;}
+.spinner{width:16px;height:16px;border:2px solid rgba(201,168,76,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner-lg{width:28px;height:28px;border-width:3px;}
+
+/* ═══ NOTIF DROPDOWN ═══ */
+.notif-wrap{position:relative;}
+.notif-dropdown{position:absolute;top:44px;right:0;width:290px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:var(--transition);}
+.notif-dropdown.open{opacity:1;transform:none;pointer-events:all;}
+.notif-header{padding:11px 14px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.notif-item{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;gap:9px;align-items:flex-start;cursor:pointer;transition:background 0.1s;}
+.notif-item:hover{background:var(--bg3);}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:rgba(201,168,76,0.03);}
+.notif-icon{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.ni-gold{background:var(--gold-dim);}
+.ni-green{background:var(--green-dim);}
+.ni-blue{background:var(--blue-dim);}
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px;}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:11px 16px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:9px;z-index:500;box-shadow:var(--shadow-lg);animation:toastIn 0.25s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.exit{animation:toastOut 0.25s ease forwards;}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
+
+/* ═══ STAMP MODAL ═══ */
+.stamp-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.stamp-item{background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.stamp-item.featured{background:var(--gold-dim);border:1px solid var(--gold-border);}
+.stamp-val{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold2);}
+.stamp-val.blue{color:var(--blue);}
+.stamp-lbl{font-size:10.5px;color:var(--text3);margin-bottom:4px;}
+
+/* ═══ SEARCH BAR ═══ */
+.search-row{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;}
+.search-row svg{width:13px;height:13px;color:var(--text3);flex-shrink:0;}
+.search-row input{background:none;border:none;outline:none;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;}
+.search-row input::placeholder{color:var(--text3);}
+
+/* ═══ SECTION HEADERS ═══ */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+.sh-title{font-family:'Playfair Display',serif;font-size:14.5px;font-weight:500;color:var(--text);}
+
+/* ═══ MISC ═══ */
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.text-muted{color:var(--text3);font-size:12px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.page-header{margin-bottom:20px;}
+.page-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.page-desc{font-size:12.5px;color:var(--text3);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3);}
+.empty-icon{font-size:32px;margin-bottom:10px;display:block;}
+.section-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.section-block-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-grid .full{grid-column:1/-1;}
+.fade-in{animation:fadeIn 0.22s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ═══ MARKDOWN IN CHAT ═══ */
+.msg-bubble strong{font-weight:600;}
+.msg-bubble ul{padding-left:18px;margin:6px 0;}
+.msg-bubble li{margin-bottom:3px;}
+.msg-bubble p{margin-bottom:6px;}
+.msg-bubble p:last-child{margin-bottom:0;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG & CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const API = "https://nyayaai-backend-1-pcpy.onrender.com/";
+
+const PAGES = {
+  dashboard:"Dashboard", generator:"Generate Document", templates:"Legal Templates",
+  chat:"AI Legal Assistant", knowledgebase:"Knowledge Base", documents:"My Documents",
+  admin:"Admin Panel", profile:"My Profile", pricing:"Pricing & Plans", settings:"Settings"
+};
+
+const DOC_TYPES = [
+  {type:"nda",label:"Non-Disclosure Agreement",icon:"📄",tag:"NDA"},
+  {type:"rental",label:"Rental / L&L Agreement",icon:"🏠",tag:"Lease"},
+  {type:"employment",label:"Employment Contract",icon:"💼",tag:"HR"},
+  {type:"internship",label:"Internship Agreement",icon:"🎓",tag:"Intern"},
+  {type:"freelance",label:"Freelance Agreement",icon:"🤝",tag:"Gig"},
+  {type:"service",label:"Service Agreement",icon:"⚙️",tag:"SLA"},
+  {type:"partnership",label:"Partnership Deed",icon:"🏢",tag:"LLP"},
+  {type:"mou",label:"MoU",icon:"📋",tag:"MOU"},
+  {type:"poa",label:"Power of Attorney",icon:"⚖️",tag:"PoA"},
+  {type:"affidavit",label:"Affidavit",icon:"📜",tag:"Court"},
+  {type:"legalnotice",label:"Legal Notice",icon:"🔔",tag:"Notice"},
+  {type:"vendor",label:"Vendor Agreement",icon:"📦",tag:"Vendor"},
+  {type:"consultancy",label:"Consultancy Agreement",icon:"💡",tag:"Consult"},
+  {type:"privacy",label:"Privacy Policy",icon:"🔒",tag:"Policy"},
+  {type:"tnc",label:"Terms & Conditions",icon:"📑",tag:"T&C"},
+  {type:"gst",label:"GST Invoice",icon:"💰",tag:"GST"},
+];
+
+const STATES = ["Karnataka","Maharashtra","Delhi","Tamil Nadu","Telangana","Gujarat","Uttar Pradesh","Rajasthan","West Bengal","Punjab","Kerala","Madhya Pradesh","Andhra Pradesh","Bihar","Odisha"];
+
+const DOC_FIELDS = {
+  nda:[{id:"party1",label:"Disclosing Party",placeholder:"Full name or company"},{id:"party2",label:"Receiving Party",placeholder:"Full name or company"},{id:"purpose",label:"Purpose",placeholder:"E.g. Evaluating partnership"},{id:"duration",label:"Duration",type:"select",options:["1 Year","2 Years","3 Years","5 Years","Perpetual"]},{id:"penalty",label:"Breach Penalty (₹)",placeholder:"E.g. 5,00,000"}],
+  rental:[{id:"landlord",label:"Landlord Name",placeholder:"Full legal name"},{id:"tenant",label:"Tenant Name",placeholder:"Full legal name"},{id:"property_address",label:"Property Address",placeholder:"Full address"},{id:"rent",label:"Monthly Rent (₹)",placeholder:"E.g. 25,000"},{id:"deposit",label:"Security Deposit (₹)",placeholder:"E.g. 1,00,000"},{id:"lockin",label:"Lock-in Period",type:"select",options:["3 Months","6 Months","11 Months","1 Year"]},{id:"notice",label:"Notice Period",type:"select",options:["15 Days","30 Days","60 Days"]}],
+  employment:[{id:"employer",label:"Employer Company",placeholder:"Full company name"},{id:"employee",label:"Employee Name",placeholder:"Full legal name"},{id:"designation",label:"Designation",placeholder:"E.g. Senior Engineer"},{id:"ctc",label:"Annual CTC (₹)",placeholder:"E.g. 18,00,000"},{id:"probation",label:"Probation Period",type:"select",options:["No Probation","1 Month","3 Months","6 Months"]},{id:"notice",label:"Notice Period",type:"select",options:["15 Days","1 Month","2 Months","3 Months"]}],
+  freelance:[{id:"client",label:"Client Name",placeholder:"Full name or company"},{id:"freelancer",label:"Freelancer Name",placeholder:"Full legal name"},{id:"project",label:"Project / Scope",placeholder:"Brief description"},{id:"fee",label:"Project Fee (₹)",placeholder:"E.g. 50,000"},{id:"deadline",label:"Deadline",placeholder:"DD/MM/YYYY"},{id:"payment_terms",label:"Payment Terms",type:"select",options:["50% advance + 50% delivery","Milestone-based","Full on delivery"]}],
+  legalnotice:[{id:"sender",label:"Sender Name",placeholder:"Your name or advocate"},{id:"recipient",label:"Recipient Name",placeholder:"Full name or company"},{id:"subject",label:"Subject of Notice",placeholder:"E.g. Recovery of dues"},{id:"amount",label:"Amount (₹)",placeholder:"If applicable"},{id:"deadline",label:"Response Deadline",type:"select",options:["7 Days","15 Days","30 Days","60 Days"]}],
+  partnership:[{id:"firm_name",label:"Firm / LLP Name",placeholder:"Full firm name"},{id:"partner1",label:"Partner 1 Name",placeholder:"Full legal name"},{id:"partner2",label:"Partner 2 Name",placeholder:"Full legal name"},{id:"business_nature",label:"Nature of Business",placeholder:"E.g. Software development"},{id:"profit_ratio",label:"Profit Sharing Ratio",placeholder:"E.g. 50:50"}],
+};
+// Default fields for undeclared types
+const DEFAULT_FIELDS = [{id:"party1",label:"Party 1",placeholder:"Full name or company"},{id:"party2",label:"Party 2",placeholder:"Full name or company"},{id:"date",label:"Effective Date",placeholder:"DD/MM/YYYY"},{id:"duration",label:"Duration",type:"select",options:["6 Months","1 Year","2 Years","3 Years"]}];
+
+const RECOMMENDATIONS = {
+  nda:["Non-Compete Clause","Non-Solicitation Clause","Return of Information","Injunctive Relief"],
+  rental:["Maintenance Clause","Utility Bills Clause","Pet Policy","Subletting Restriction"],
+  employment:["IP Assignment Clause","ESOP Clause","Moonlighting Policy","Non-Solicitation"],
+  freelance:["Kill Fee Clause","Revision Limit Clause","GST Applicability","Non-Solicitation"],
+  legalnotice:["Without Prejudice Note","Cost Recovery Clause","Arbitration Clause"],
+  partnership:["Dispute Resolution","Retirement Clause","Bank Operation Clause"],
+};
+const DEFAULT_RECS = ["Dispute Resolution","Confidentiality Clause","Governing Law","Limitation of Liability"];
+
+// ═══════════════════════════════════════════════════════════════
+// API HELPER
+// ═══════════════════════════════════════════════════════════════
+const getToken = () => localStorage.getItem("nyaya_token");
+const apiCall = async (method, path, body) => {
+  const token = getToken();
+  const res = await fetch(`${API}${path}`, {
+    method, headers:{"Content-Type":"application/json",...(token?{Authorization:`Bearer ${token}`}:{})},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({detail:res.statusText})); throw new Error(e.detail||"Request failed"); }
+  return res.json();
+};
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH CONTEXT
+// ═══════════════════════════════════════════════════════════════
+const AuthCtx = createContext(null);
+function AuthProvider({children}) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      apiCall("GET","/api/auth/me").then(setUser).catch(()=>localStorage.removeItem("nyaya_token")).finally(()=>setLoading(false));
+    } else {
+      // Demo user
+      // No token — set a fresh guest user with real zero values
+      setUser({id:"guest", name:"Guest", email:"", plan:"free", queries_used:0, queries_limit:50});
+      setLoading(false);
+    }
+  }, []);
+  const login = async (email, password) => { const d = await apiCall("POST","/api/auth/login",{email,password}); localStorage.setItem("nyaya_token",d.token); setUser(d.user); return d.user; };
+  const signup = async (name,email,password,profession) => { const d = await apiCall("POST","/api/auth/signup",{name,email,password,profession}); localStorage.setItem("nyaya_token",d.token); setUser(d.user); return d.user; };
+  const googleLogin = async () => { const d = await apiCall("POST","/api/auth/google"); localStorage.setItem("nyaya_token",d.token); setUser(d.user); return d.user; };
+  const logout = () => { localStorage.removeItem("nyaya_token"); setUser({id:"guest",name:"Guest",email:"",plan:"free",queries_used:0,queries_limit:50}); };
+  return <AuthCtx.Provider value={{user,loading,login,signup,googleLogin,logout}}>{children}</AuthCtx.Provider>;
+}
+const useAuth = () => useContext(AuthCtx);
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+const ToastCtx = createContext(null);
+function ToastProvider({children}) {
+  const [toasts, setToasts] = useState([]);
+  const show = useCallback((msg, type="info") => {
+    const id = Date.now();
+    setToasts(t => [...t, {id, msg, type}]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
+  }, []);
+  return (
+    <ToastCtx.Provider value={show}>
+      {children}
+      <div style={{position:"fixed",bottom:22,right:22,display:"flex",flexDirection:"column",gap:8,zIndex:500}}>
+        {toasts.map(t => (
+          <div key={t.id} className="toast">
+            <span>{t.type==="error"?"❌":t.type==="success"?"✅":t.type==="warn"?"⚠️":"💬"}</span>
+            <span>{t.msg}</span>
+          </div>
+        ))}
+      </div>
+    </ToastCtx.Provider>
+  );
+}
+const useToast = () => useContext(ToastCtx);
+
+// ═══════════════════════════════════════════════════════════════
+// SIMPLE MARKDOWN RENDERER
+// ═══════════════════════════════════════════════════════════════
+function Md({text}) {
+  if (!text) return null;
+  const html = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/^- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/\n/g, "<br/>");
+  return <span dangerouslySetInnerHTML={{__html:html}} />;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SVG ICONS
+// ═══════════════════════════════════════════════════════════════
+const Icon = ({name, size=15, style={}}) => {
+  const icons = {
+    grid:<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
+    doc:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></>,
+    book:<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>,
+    chat:<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>,
+    kb:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
+    folder:<><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></>,
+    shield:<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>,
+    user:<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    dollar:<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>,
+    settings:<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></>,
+    bell:<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
+    send:<><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+    download:<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
+    play:<><polygon points="5 3 19 12 5 21 5 3"/></>,
+    search:<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
+    plus:<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+    edit:<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+    trash:<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></>,
+    print:<><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></>,
+    share:<><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></>,
+    logout:<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
+    check:<><polyline points="20 6 9 17 4 12"/></>,
+    x:<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+    alert:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
+    chart:<><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={style}>
+      {icons[name] || icons.doc}
+    </svg>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SHARED COMPONENTS
+// ═══════════════════════════════════════════════════════════════
+function Toggle({on, onChange}) {
+  return <div className={`toggle${on?" on":""}`} onClick={()=>onChange(!on)} />;
+}
+
+function SearchBar({placeholder, onChange, style={}}) {
+  return (
+    <div className="search-row" style={{maxWidth:280,...style}}>
+      <Icon name="search" size={13} />
+      <input placeholder={placeholder||"Search…"} onChange={e=>onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function SectionHeader({title, children}) {
+  return (
+    <div className="sh">
+      <div className="sh-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function EmptyState({icon, title, desc, action}) {
+  return (
+    <div className="empty-state">
+      <span className="empty-icon">{icon||"📭"}</span>
+      <div style={{fontSize:14,color:"var(--text)",marginBottom:6}}>{title}</div>
+      <div style={{fontSize:12.5,marginBottom:action?14:0}}>{desc}</div>
+      {action}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function Sidebar({page, setPage, onAuthClick}) {
+  const {user} = useAuth();
+  const pct = user ? Math.round((user.queries_used||0) / (user.queries_limit||50) * 100) : 0;
+  const navItem = (p, icon, label, badge) => (
+    <div key={p} className={`nav-item${page===p?" active":""}`} onClick={()=>setPage(p)}>
+      <Icon name={icon} size={15} />
+      <span>{label}</span>
+      {badge && <span className="nav-badge">{badge}</span>}
+    </div>
+  );
+  return (
+    <nav className="sidebar">
+      <div className="sidebar-logo">
+        <div className="logo-row">
+          <div className="logo-icon">N</div>
+          <div>
+            <div className="logo-name">Nyaya<span>AI</span></div>
+            <div className="logo-tagline">Legal Document Generator</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="nav-section">
+        <div className="nav-label">Main</div>
+        {navItem("dashboard","grid","Dashboard")}
+        {navItem("generator","doc","Generate Document")}
+        {navItem("templates","book","Templates","17")}
+        {navItem("chat","chat","AI Legal Assistant")}
+        {navItem("knowledgebase","kb","Knowledge Base")}
+      </div>
+
+      <div className="nav-section">
+        <div className="nav-label">Documents</div>
+        {navItem("documents","folder","My Documents")}
+        {navItem("admin","shield","Admin Panel")}
+      </div>
+
+      <div className="nav-section">
+        <div className="nav-label">Account</div>
+        {navItem("profile","user","Profile")}
+        {navItem("pricing","dollar","Pricing")}
+        {navItem("settings","settings","Settings")}
+      </div>
+
+      <div className="sidebar-bottom">
+        <div className="usage-mini">
+          <div className="usage-label-row">
+            <span>AI Queries</span>
+            <span style={{color:pct>85?"var(--red)":"var(--text3)"}}>{user?.queries_used||0}/{user?.queries_limit||50}</span>
+          </div>
+          <div className="usage-bar">
+            <div className={`usage-fill${pct>85?" warn":""}`} style={{width:`${Math.min(pct,100)}%`}} />
+          </div>
+        </div>
+        <div className="user-card" onClick={onAuthClick}>
+          <div className="user-avatar">{(user?.name||"G")[0]}</div>
+          <div>
+            <div className="user-name">{user?.name||"Guest"}</div>
+            <div className="user-plan">✦ {user?.plan==="pro"?"Pro Plan":user?.plan==="enterprise"?"Enterprise":"Free Plan"}</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOPBAR
+// ═══════════════════════════════════════════════════════════════
+function Topbar({page, setPage, onAuthClick}) {
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
+  const notifRef = useRef(null);
+  const toast = useToast();
+
+  useEffect(() => {
+    const handler = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="topbar">
+      <div className="topbar-title">{PAGES[page]||page}</div>
+      <div className="rag-pill"><span className="rag-dot"/><span>RAG+AI Active</span></div>
+      <div className="topbar-right">
+        <button className="btn btn-ghost btn-sm" onClick={()=>setPage("settings")}>HI/EN</button>
+        <div className="notif-wrap" ref={notifRef}>
+          <div className="icon-btn" onClick={()=>setNotifOpen(o=>!o)} style={{position:"relative"}}>
+            <Icon name="bell" size={15} />
+            {hasUnread && <span style={{width:6,height:6,background:"var(--gold)",borderRadius:"50%",position:"absolute",top:5,right:5}}/>}
+          </div>
+          <div className={`notif-dropdown${notifOpen?" open":""}`}>
+            <div className="notif-header">
+              <span style={{fontSize:13,color:"var(--text)",fontWeight:500}}>Notifications</span>
+              <button style={{fontSize:11,color:"var(--gold2)",background:"none",border:"none",cursor:"pointer"}} onClick={()=>{setHasUnread(false);toast("✅ All read","success");}}>Mark all read</button>
+            </div>
+            {[
+              {icon:"📄",cls:"ni-gold",text:"NDA for TechCorp generated via RAG.",time:"1 hour ago",unread:true},
+              {icon:"✅",cls:"ni-green",text:"Employment Agreement exported as PDF.",time:"Yesterday",unread:true},
+              {icon:"💬",cls:"ni-blue",text:"AI answered your question on indemnity clauses.",time:"2 days ago",unread:false},
+            ].map((n,i)=>(
+              <div key={i} className={`notif-item${n.unread?" unread":""}`}>
+                <div className={`notif-icon ${n.cls}`}>{n.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.5}}>{n.text}</div>
+                  <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{n.time}</div>
+                </div>
+                {n.unread && <div className="notif-dot"/>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={onAuthClick}>Sign In</button>
+        <button className="btn btn-gold btn-sm" onClick={()=>setPage("generator")}>
+          <Icon name="plus" size={13}/> New Document
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH MODAL
+// ═══════════════════════════════════════════════════════════════
+function AuthModal({onClose}) {
+  const [tab, setTab] = useState("login");
+  const [form, setForm] = useState({email:"demo@nyayaai.in",password:"demo123",name:"",profession:"Individual"});
+  const [loading, setLoading] = useState(false);
+  const {login, signup, googleLogin} = useAuth();
+  const toast = useToast();
+
+  const handle = async () => {
+    setLoading(true);
+    try {
+      if (tab==="login") await login(form.email, form.password);
+      else await signup(form.name, form.email, form.password, form.profession);
+      toast("✅ Welcome to NyayaAI!", "success");
+      onClose();
+    } catch(e) {
+      toast(e.message||"Auth failed","error");
+    } finally { setLoading(false); }
+  };
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    try { await googleLogin(); toast("✅ Signed in with Google!","success"); onClose(); }
+    catch(e) { toast(e.message,"error"); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal auth-modal">
+        <button className="modal-close" onClick={onClose}>✕</button>
+        <div style={{textAlign:"center",marginBottom:18}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:21,color:"var(--text)"}}>Nyaya<span style={{color:"var(--gold)"}}>AI</span></div>
+          <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>Indian Legal Document Generator</div>
+        </div>
+        <div className="auth-tabs">
+          <div className={`auth-tab${tab==="login"?" active":""}`} onClick={()=>setTab("login")}>Sign In</div>
+          <div className={`auth-tab${tab==="signup"?" active":""}`} onClick={()=>setTab("signup")}>Create Account</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+          {tab==="signup" && (
+            <div className="field"><label>Full Name</label>
+              <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Your full name" />
+            </div>
+          )}
+          <div className="field"><label>Email Address</label>
+            <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="you@example.com" />
+          </div>
+          <div className="field"><label>Password</label>
+            <input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="••••••••" />
+          </div>
+          {tab==="signup" && (
+            <div className="field"><label>Profession</label>
+              <select value={form.profession} onChange={e=>setForm({...form,profession:e.target.value})}>
+                {["Individual","Advocate / Lawyer","Business Owner","CA / CS","HR Professional","Real Estate Agent"].map(p=><option key={p}>{p}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+        <button className="auth-submit" onClick={handle} disabled={loading}>
+          {loading ? <span className="spinner" style={{margin:"0 auto"}}/> : tab==="login"?"Sign In":"Create Account"}
+        </button>
+        <div className="auth-divider">or</div>
+        <button className="google-btn" onClick={handleGoogle} disabled={loading}>
+          <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <div style={{fontSize:11,color:"var(--text3)",textAlign:"center",marginTop:10}}>Demo: demo@nyayaai.in / demo123</div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD PAGE
+// ═══════════════════════════════════════════════════════════════
+function Dashboard({setPage, setInitialDocType}) {
+  const {user} = useAuth();
+  const toast = useToast();
+  const [analytics, setAnalytics] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+  const [recentDocs, setRecentDocs] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+
+  useEffect(() => {
+    // Fetch dashboard analytics
+    apiCall("GET", "/api/analytics/dashboard")
+      .then(data => { setAnalytics(data); })
+      .catch(() => {})
+      .finally(() => setLoadingAnalytics(false));
+
+    // Fetch real documents
+    apiCall("GET", "/api/documents")
+      .then(data => setRecentDocs((data.documents || []).slice(0, 4)))
+      .catch(() => {})
+      .finally(() => setLoadingDocs(false));
+  }, []);
+
+  const goGenerate = (type) => { setInitialDocType(type); setPage("generator"); };
+
+  const stats = analytics?.stats || {};
+  const totalDocs   = stats.total_documents ?? 0;
+  const templates   = stats.templates_available ?? 17;
+  const queriesUsed = stats.queries_used ?? user?.queries_used ?? 0;
+  const queriesMax  = stats.queries_limit  ?? user?.queries_limit ?? 50;
+  const timeSaved   = stats.time_saved_hrs ?? 0;
+  const docsThisMo  = stats.docs_this_month ?? 0;
+
+  // Format date nicely
+  const fmtDate = (iso) => {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"});
+    } catch { return iso.slice(0,10); }
+  };
+
+  // Map doc_type to display name
+  const typeLabel = (t) => ({
+    nda:"Non-Disclosure", rental:"Rental", employment:"Employment",
+    freelance:"Freelance", legalnotice:"Legal Notice", partnership:"Partnership",
+    internship:"Internship", service:"Service", mou:"MoU",
+    poa:"Power of Attorney", affidavit:"Affidavit", vendor:"Vendor",
+    consultancy:"Consultancy", privacy:"Privacy Policy", tnc:"Terms & Conditions", gst:"GST Invoice"
+  }[t] || t);
+
+  const activityColors = ["var(--gold)","var(--green)","var(--blue)","var(--gold)","var(--green)"];
+  const activityFromDocs = recentDocs.slice(0,3).map((d,i) => ({
+    color: activityColors[i],
+    text: `${typeLabel(d.doc_type)} "${d.title}" ${d.status === "done" ? "generated" : d.status === "draft" ? "saved as draft" : "under review"}`,
+    time: fmtDate(d.created_at),
+  }));
+
+  return (
+    <div className="page fade-in">
+      <div style={{marginBottom:20}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:"var(--text)",marginBottom:3}}>
+          Welcome back, {user?.name?.split(" ")[0]||"there"} 🙏
+        </div>
+        <div style={{fontSize:12.5,color:"var(--text3)"}}>Here's your legal workspace overview</div>
+      </div>
+
+      {/* ── Stats ── */}
+      <div className="stats-grid" style={{marginBottom:20}}>
+        <div className="stat-card">
+          <div className="stat-lbl">Documents Generated</div>
+          <div className="stat-val gold">{loadingAnalytics ? "—" : totalDocs}</div>
+          <div className="stat-meta">
+            {docsThisMo > 0 ? <><span className="stat-up">↑ {docsThisMo}</span> this month</> : "No documents yet"}
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-lbl">Templates Available</div>
+          <div className="stat-val">{templates}</div>
+          <div className="stat-meta">Across 6 categories</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-lbl">AI Queries Used</div>
+          <div className="stat-val">{loadingAnalytics ? "—" : queriesUsed}</div>
+          <div className="stat-meta">of {queriesMax} this month</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-lbl">Time Saved</div>
+          <div className="stat-val gold">{loadingAnalytics ? "—" : timeSaved > 0 ? timeSaved + "h" : "0h"}</div>
+          <div className="stat-meta">vs manual drafting</div>
+        </div>
+      </div>
+
+      {/* ── Quick Actions + Activity ── */}
+      <div className="two-col" style={{marginBottom:20}}>
+        <div>
+          <SectionHeader title="Quick Actions" />
+          <div className="qa-grid">
+            {[
+              {type:"rental",  icon:"🏠", label:"Rental Agreement",   sub:"11-month lease"},
+              {type:"nda",     icon:"📄", label:"NDA",                sub:"Non-disclosure"},
+              {type:"employment",icon:"💼",label:"Employment Contract",sub:"Full-time hire"},
+              {type:"legalnotice",icon:"⚖️",label:"Legal Notice",     sub:"Court-ready draft"},
+              {type:"freelance",icon:"🤝",label:"Freelance Agreement", sub:"Project contract"},
+              {type:"chat",    icon:"💬", label:"Ask Legal AI",        sub:"Get instant advice", isChat:true},
+            ].map((a,i)=>(
+              <div key={i} className="qa-card" onClick={()=>a.isChat?setPage("chat"):goGenerate(a.type)}>
+                <div className="qa-icon">{a.icon}</div>
+                <div><div className="qa-text">{a.label}</div><div className="qa-sub">{a.sub}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <SectionHeader title="Recent Activity" />
+          <div className="card" style={{padding:0}}>
+            {activityFromDocs.length > 0 ? activityFromDocs.map((a,i)=>(
+              <div key={i} className="activity-item" style={{padding:"9px 16px", borderBottom: i < activityFromDocs.length-1 ? "1px solid var(--border)" : "none"}}>
+                <div className="act-dot" style={{background:a.color, marginTop:5, flexShrink:0}}/>
+                <div>
+                  <div style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.5}}>{a.text}</div>
+                  <div style={{fontSize:10.5,color:"var(--text3)",marginTop:2}}>{a.time}</div>
+                </div>
+              </div>
+            )) : (
+              <div style={{padding:"20px 16px", textAlign:"center"}}>
+                <div style={{fontSize:12.5,color:"var(--text3)"}}>No activity yet.</div>
+                <div style={{fontSize:12,color:"var(--text3)",marginTop:4}}>Generate your first document to see activity here.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Recent Documents ── */}
+      <SectionHeader title="Recent Documents">
+        <button className="btn btn-ghost btn-sm" onClick={()=>setPage("documents")}>View All</button>
+      </SectionHeader>
+      <div className="table-wrap">
+        <div className="table-head" style={{gridTemplateColumns:"2fr 1.2fr 1fr 1fr 90px"}}>
+          <span>Document</span><span>Type</span><span>Date</span><span>Status</span><span>Actions</span>
+        </div>
+        {loadingDocs ? (
+          <div style={{padding:"18px",textAlign:"center"}}><span className="spinner"/></div>
+        ) : recentDocs.length === 0 ? (
+          <div style={{padding:"22px 18px", textAlign:"center", color:"var(--text3)", fontSize:13}}>
+            No documents yet — <span style={{color:"var(--gold2)", cursor:"pointer"}} onClick={()=>setPage("generator")}>generate your first document</span>
+          </div>
+        ) : recentDocs.map((d,i)=>(
+          <div key={d.id||i} className="table-row" style={{gridTemplateColumns:"2fr 1.2fr 1fr 1fr 90px"}} onClick={()=>setPage("documents")}>
+            <span className="td-name">{d.title}</span>
+            <span>{typeLabel(d.doc_type)}</span>
+            <span>{fmtDate(d.created_at)}</span>
+            <span>
+              <span className={`status-pill pill-${d.status}`}>
+                <span className="status-dot"/>{d.status?.charAt(0).toUpperCase()+d.status?.slice(1)}
+              </span>
+            </span>
+            <span style={{display:"flex",gap:5}}>
+              <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation(); window.open(`${API}/api/export/pdf/${d.id}`,"_blank"); toast("📄 PDF downloading...","info");}}>PDF</button>
+              <button className="btn btn-ghost btn-xs" onClick={e=>{e.stopPropagation(); window.open(`${API}/api/export/docx/${d.id}`,"_blank"); toast("📝 DOCX downloading...","info");}}>DOCX</button>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Popular Templates ── */}
+      <div style={{marginTop:20}}>
+        <SectionHeader title="Popular Templates">
+          <button className="btn btn-ghost btn-sm" onClick={()=>setPage("templates")}>All Templates</button>
+        </SectionHeader>
+        <div className="three-col">
+          {[
+            {type:"rental",   icon:"🏠", name:"Rental Agreement",    desc:"11-month residential lease per Transfer of Property Act.", lang:"EN/HI/KN", tag:"free"},
+            {type:"nda",      icon:"📄", name:"NDA",                 desc:"Confidentiality agreement under Indian Contract Act, 1872.", lang:"EN/HI", tag:"free"},
+            {type:"employment",icon:"💼",name:"Employment Contract", desc:"Full-time employment with IP, CTC, and exit clauses.", lang:"EN", tag:"pro"},
+          ].map((t,i)=>(
+            <div key={i} className="tpl-card" onClick={()=>goGenerate(t.type)}>
+              <div className="tpl-icon" style={{background:i===0?"var(--gold-dim)":i===1?"var(--blue-dim)":"var(--green-dim)"}}>{t.icon}</div>
+              <div className="tpl-name">{t.name}</div>
+              <div className="tpl-desc">{t.desc}</div>
+              <div className="tpl-footer">
+                <span style={{fontSize:11,color:"var(--text3)"}}>{t.lang}</span>
+                <span className={`badge badge-${t.tag==="free"?"green":"gold"}`}>{t.tag}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+// ═══════════════════════════════════════════════════════════════
+// GENERATOR PAGE
+// ═══════════════════════════════════════════════════════════════
+function Generator({initialDocType, setPage}) {
+  const toast = useToast();
+  const [docType, setDocType] = useState(initialDocType||"nda");
+  const [fields, setFields] = useState({});
+  const [state, setState] = useState("Karnataka");
+  const [language, setLanguage] = useState("english");
+  const [useRag, setUseRag] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [genStep, setGenStep] = useState("");
+  const [genPct, setGenPct] = useState(0);
+  const [result, setResult] = useState(null);
+  const [previewTab, setPreviewTab] = useState("preview");
+  const [clauses, setClauses] = useState([]);
+  const [risks, setRisks] = useState([]);
+  const [explainLoading, setExplainLoading] = useState({});
+  const [explanations, setExplanations] = useState({});
+  const [savedDocId, setSavedDocId] = useState(null);
+
+  const currentDocType = DOC_TYPES.find(d=>d.type===docType)||DOC_TYPES[0];
+  const currentFields = DOC_FIELDS[docType]||DEFAULT_FIELDS;
+  const currentRecs = RECOMMENDATIONS[docType]||DEFAULT_RECS;
+
+  const setField = (id, val) => setFields(f=>({...f,[id]:val}));
+
+  const generate = async () => {
+    setGenerating(true);
+    setGenPct(0);
+    const steps = [
+      ["🔍 Searching FAISS clause index…",15,500],
+      ["🧠 Encoding legal context…",35,600],
+      ["📚 Selecting top-k relevant clauses…",55,500],
+      ["✍️ Generating document with Claude AI…",80,900],
+      ["✅ Formatting and finalising…",95,400],
+    ];
+    for (const [msg, pct, ms] of steps) {
+      setGenStep(msg); setGenPct(pct);
+      await new Promise(r=>setTimeout(r,ms));
+    }
+    try {
+      const data = await apiCall("POST","/api/generate",{doc_type:docType,fields,state,language,use_rag:useRag});
+      setGenPct(100);
+      await new Promise(r=>setTimeout(r,200));
+      setResult(data);
+      setClauses(data.clauses||[]);
+      setRisks(data.risks||[]);
+      setPreviewTab("preview");
+      // Auto-save
+      try {
+        const party1 = fields.party1||fields.landlord||fields.employer||fields.client||"Document";
+        const saved = await apiCall("POST","/api/documents",{
+          doc_type:docType, title:`${currentDocType.label} — ${party1}`,
+          content:data.document, fields, state, status:"draft"
+        });
+        setSavedDocId(saved.doc_id);
+      } catch(e){}
+      toast("✅ Document generated via RAG + Claude AI!", "success");
+    } catch(e) {
+      toast(e.message||"Generation failed","error");
+    } finally { setGenerating(false); }
+  };
+
+  const explainClause = async (idx, title, text) => {
+    if (explanations[idx]) { setExplanations(e=>({...e,[idx]:undefined})); return; }
+    setExplainLoading(l=>({...l,[idx]:true}));
+    try {
+      const data = await apiCall("POST","/api/clause/explain",{clause_text:text,clause_title:title});
+      setExplanations(e=>({...e,[idx]:data.explanation}));
+    } catch(e) {
+      setExplanations(e=>({...e,[idx]:"This clause establishes clear legal obligations between parties under Indian law. It is important for enforceability and should not be removed without legal advice."}));
+    } finally { setExplainLoading(l=>({...l,[idx]:false})); }
+  };
+
+  const removeClause = (idx) => { setClauses(c=>c.filter((_,i)=>i!==idx)); toast("Clause removed","info"); };
+  const addRecommended = (name) => {
+    setClauses(c=>[...c,{title:name,text:`AI-generated ${name.toLowerCase()} clause based on Indian legal standards and the context of this ${currentDocType.label}. This clause ensures legal protection and clear obligations for all parties.`,risk:"low",added:true}]);
+    toast(`✅ "${name}" added`, "success");
+  };
+
+  const exportDoc = async (format) => {
+    if (savedDocId) {
+      toast("Preparing " + format.toUpperCase() + "...", "info");
+      window.open(API + "/api/export/" + format + "/" + savedDocId, "_blank");
+      return;
+    }
+    if (!result) { toast("Please generate a document first", "warn"); return; }
+    toast("Saving then exporting as " + format.toUpperCase() + "...", "info");
+    try {
+      const party1 = fields.party1 || fields.landlord || fields.employer || fields.client || "Document";
+      const saved = await apiCall("POST", "/api/documents", {
+        doc_type: docType,
+        title: currentDocType.label + " -- " + party1,
+        content: result.document,
+        fields: fields,
+        state: state,
+        status: "draft"
+      });
+      setSavedDocId(saved.doc_id);
+      setTimeout(() => {
+        window.open(API + "/api/export/" + format + "/" + saved.doc_id, "_blank");
+      }, 400);
+    } catch(e) {
+      if (format === "pdf") {
+        toast("Opening print dialog -- Save as PDF", "info");
+        printDoc();
+      } else {
+        toast("Cannot export DOCX -- check backend connection", "error");
+      }
+    }
+  };
+
+  const printDoc = () => {
+    if (!result) { toast("Generate a document first","warn"); return; }
+    const w = window.open("","_blank");
+    w.document.write(`<!DOCTYPE html><html><head><title>${currentDocType.label}</title>
+    <style>body{font-family:Georgia,serif;max-width:700px;margin:40px auto;font-size:13px;line-height:1.85;color:#111;}
+    h1{text-align:center;font-size:17px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+    @media print{@page{margin:2cm}}</style></head><body>
+    ${document.getElementById("doc-paper-content")?.innerHTML||result.document.replace(/\n/g,"<br/>")}</body></html>`);
+    w.document.close(); setTimeout(()=>w.print(),400);
+  };
+
+  const renderDocumentHTML = () => {
+    if (!result) return (
+      <div className="doc-paper">
+        <h1 id="doc-title">{currentDocType.label}</h1>
+        <div className="doc-subtitle">Legal Document | Indian Contract Act, 1872</div>
+        <p>Fill in the form on the left and click <strong>Generate with AI</strong> to create your complete legal document using RAG + Claude AI.</p>
+        <p>Our system will:</p>
+        <p>1. Search 2,840+ Indian legal clauses using FAISS semantic search</p>
+        <p>2. Retrieve the most relevant clauses for your document type</p>
+        <p>3. Feed them to Claude AI to generate a complete, court-ready document</p>
+        <p>4. Analyze risks and provide clause-level explanations</p>
+        <div className="doc-stamp">PREVIEW<br/>NyayaAI</div>
+      </div>
+    );
+    const lines = result.document.split("\n");
+    return (
+      <div className="doc-paper" id="doc-paper-content">
+        {lines.map((line,i) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <br key={i}/>;
+          if (i===0 || (trimmed.toUpperCase()===trimmed && trimmed.length>3 && trimmed.length<80 && !trimmed.startsWith("(")))
+            return trimmed===lines[0].trim() ? <h1 key={i}>{trimmed}</h1> : <p key={i} className="doc-section">{trimmed}</p>;
+          return <p key={i}>{trimmed}</p>;
+        })}
+        <div className="doc-stamp">GENERATED<br/>NyayaAI<br/>RAG+AI</div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{padding:"16px 22px",height:"calc(100vh - 54px)",overflow:"hidden"}}>
+      <div className="gen-layout">
+        {/* LEFT PANEL */}
+        <div className="gen-left">
+          {/* Template selector */}
+          <div className="card" style={{padding:13}}>
+            <div style={{fontSize:10.5,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Select Document Type</div>
+            <div className="template-list">
+              {DOC_TYPES.map(t=>(
+                <div key={t.type} className={`tpl-chip${docType===t.type?" active":""}`} onClick={()=>{setDocType(t.type);setResult(null);setFields({});}}>
+                  <span>{t.icon}</span><span style={{flex:1}}>{t.label}</span>
+                  <span className="tpl-chip-label">{t.tag}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Questionnaire */}
+          <div className="card" style={{padding:13}}>
+            <div style={{fontSize:10.5,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Document Details</div>
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              <div className="form-grid">
+                {currentFields.map(f=>(
+                  <div key={f.id} className={`field${f.full?" full":""}`}>
+                    <label>{f.label}{f.required&&<span style={{color:"var(--red)",marginLeft:2}}>*</span>}</label>
+                    {f.type==="select"
+                      ? <select value={fields[f.id]||""} onChange={e=>setField(f.id,e.target.value)}>
+                          <option value="">Select…</option>
+                          {f.options.map(o=><option key={o}>{o}</option>)}
+                        </select>
+                      : <input value={fields[f.id]||""} onChange={e=>setField(f.id,e.target.value)} placeholder={f.placeholder||""} />
+                    }
+                  </div>
+                ))}
+              </div>
+              <div className="form-grid">
+                <div className="field">
+                  <label>Language</label>
+                  <select value={language} onChange={e=>setLanguage(e.target.value)}>
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी (Hindi)</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label>State / Jurisdiction</label>
+                  <select value={state} onChange={e=>setState(e.target.value)}>
+                    {STATES.map(s=><option key={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 10px",background:"var(--bg3)",borderRadius:"var(--radius-sm)"}}>
+                <div>
+                  <div style={{fontSize:12.5,color:"var(--text)"}}>RAG-Powered Generation</div>
+                  <div style={{fontSize:10.5,color:"var(--text3)"}}>FAISS + SentenceTransformers</div>
+                </div>
+                <Toggle on={useRag} onChange={setUseRag}/>
+              </div>
+              <button className="btn btn-gold" style={{justifyContent:"center",padding:"9px",width:"100%",fontSize:13}} onClick={generate} disabled={generating}>
+                {generating ? <><span className="spinner"/><span style={{marginLeft:6}}>Generating…</span></> : <><Icon name="play" size={13}/><span>Generate with AI</span></>}
+              </button>
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div className="card" style={{padding:13}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{fontSize:10.5,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Recommendations</div>
+              <span className="badge badge-blue">RAG</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+              {currentRecs.map((r,i)=>(
+                <div key={i} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"8px 10px",cursor:"pointer",transition:"var(--transition)"}}
+                  onClick={()=>addRecommended(r)}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor="var(--gold-border)"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
+                  <div style={{fontSize:12,color:"var(--text)"}}>+ {r}</div>
+                  <div style={{fontSize:10.5,color:"var(--text3)"}}>AI recommended</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="gen-right">
+          {generating && (
+            <div className="gen-overlay">
+              <div className="spinner spinner-lg"/>
+              <div className="gen-status-title">{genStep}</div>
+              <div className="gen-status-sub">Using RAG + FAISS + Claude AI</div>
+              <div style={{width:260}}>
+                <div className="progress-bar"><div className="progress-fill" style={{width:`${genPct}%`}}/></div>
+              </div>
+            </div>
+          )}
+
+          <div className="preview-bar">
+            <div style={{display:"flex",gap:4}}>
+              {["preview","clauses","risks"].map(t=>(
+                <div key={t} className={`preview-tab${previewTab===t?" active":""}`} onClick={()=>setPreviewTab(t)}>
+                  {t==="preview"?"Preview":t==="clauses"?"Clause Editor":"Risk Analysis"}
+                </div>
+              ))}
+            </div>
+            <div className="preview-actions">
+              <button className="btn btn-ghost btn-sm" onClick={printDoc}><Icon name="print" size={12}/>Print</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>exportDoc("docx")}><Icon name="download" size={12}/>DOCX</button>
+              <button className="btn btn-gold btn-sm" onClick={()=>exportDoc("pdf")}><Icon name="download" size={12}/>PDF</button>
+            </div>
+          </div>
+
+          {/* PREVIEW */}
+          {previewTab==="preview" && (
+            <div className="preview-body">{renderDocumentHTML()}</div>
+          )}
+
+          {/* CLAUSE EDITOR */}
+          {previewTab==="clauses" && (
+            <div className="preview-body">
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontSize:13,color:"var(--text)"}}>Clause Editor <span style={{fontSize:11,color:"var(--text3)",marginLeft:6}}>Click Explain on any clause</span></div>
+                <button className="btn btn-ghost btn-sm" onClick={()=>{const t=prompt("Clause title:"); const b=prompt("Clause text:"); if(t&&b){setClauses(c=>[...c,{title:t,text:b,risk:"low",added:true}]);}}}>+ Add Clause</button>
+              </div>
+              {clauses.length===0 ? (
+                <EmptyState icon="📝" title="No clauses yet" desc="Generate a document to see its clauses here" />
+              ) : clauses.map((c,i)=>(
+                <div key={i} className={`clause-item risk-${c.risk||"low"}`}>
+                  <div className="clause-header">
+                    <div className="clause-title-text">{c.title}</div>
+                    <span className={`badge badge-${c.risk==="high"?"red":c.risk==="medium"?"gold":"green"}`}>{(c.risk||"low").toUpperCase()}</span>
+                    {c.added && <span className="badge badge-blue">Added</span>}
+                  </div>
+                  <div className="clause-body" contentEditable suppressContentEditableWarning style={{outline:"none"}}>{c.text}</div>
+                  <div className="clause-actions">
+                    <button className="btn btn-ghost btn-xs" onClick={()=>explainClause(i,c.title,c.text)} disabled={explainLoading[i]}>
+                      {explainLoading[i]?<span className="spinner"/>:"💡 Explain"}
+                    </button>
+                    <button className="btn btn-ghost btn-xs" onClick={()=>{const t=prompt("Edit clause text:",c.text); if(t) setClauses(cl=>cl.map((x,j)=>j===i?{...x,text:t}:x));}}>Edit</button>
+                    <button className="btn btn-danger btn-xs" onClick={()=>removeClause(i)}>Remove</button>
+                  </div>
+                  {explanations[i] && (
+                    <div className="clause-explain-box show">
+                      <Md text={explanations[i]}/>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* RISK ANALYSIS */}
+          {previewTab==="risks" && (
+            <div className="preview-body">
+              <div style={{marginBottom:16}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:15,color:"var(--text)"}}>Legal Risk Analysis</div>
+                  <span className="badge badge-blue">AI Powered</span>
+                </div>
+                <div style={{fontSize:12,color:"var(--text3)"}}>AI has scanned this document for missing clauses, ambiguous language, and legal risks.</div>
+              </div>
+              {risks.length===0 ? (
+                <EmptyState icon="🛡️" title="No risks detected" desc="Generate a document to run risk analysis" />
+              ) : risks.map((r,i)=>(
+                <div key={i} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"13px 15px",marginBottom:10}}>
+                  <div className="risk-item" style={{padding:0,border:"none"}}>
+                    <div style={{fontSize:18,flexShrink:0}}>{r.level==="high"?"🔴":r.level==="medium"?"🟡":"🟢"}</div>
+                    <div>
+                      <div className="risk-title">
+                        {r.title}
+                        <span className={`badge badge-${r.level==="high"?"red":r.level==="medium"?"gold":"green"}`}>{r.level?.toUpperCase()} RISK</span>
+                      </div>
+                      <div className="risk-desc">{r.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:16,padding:"10px 12px",background:"var(--bg3)",borderRadius:"var(--radius-sm)",fontSize:12,color:"var(--text3)"}}>
+                ⚠️ Risk analysis is AI-generated. Always consult a qualified advocate for legal advice specific to your situation.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATES PAGE
+// ═══════════════════════════════════════════════════════════════
+function Templates({setPage, setInitialDocType}) {
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const filters = ["all","property","business","employment","legal","tech"];
+  const typeMap = {rental:"property",leave:"property",nda:"business",employment:"employment",internship:"employment",freelance:"employment",service:"business",partnership:"business",mou:"business",poa:"legal",affidavit:"legal",legalnotice:"legal",vendor:"business",consultancy:"business",privacy:"tech",tnc:"tech",gst:"business"};
+  const colors = {property:"var(--gold-dim)",business:"var(--blue-dim)",employment:"var(--green-dim)",legal:"var(--red-dim)",tech:"var(--purple-dim)"};
+
+  const filtered = DOC_TYPES.filter(t => {
+    const cat = typeMap[t.type]||"business";
+    const matchFilter = filter==="all"||cat===filter;
+    const matchSearch = !search || t.label.toLowerCase().includes(search.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  return (
+    <div className="page fade-in">
+      <div className="page-header">
+        <div className="page-title">Legal Templates</div>
+        <div className="page-desc">17 professionally drafted Indian legal document templates powered by RAG</div>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:18}}>
+        <SearchBar placeholder="Search templates…" onChange={setSearch} />
+        {filters.map(f=>(
+          <div key={f} className={`badge${filter===f?" badge-gold":" badge-blue"}`} style={{cursor:"pointer",padding:"4px 12px",borderRadius:20,fontSize:12}} onClick={()=>setFilter(f)}>
+            {f.charAt(0).toUpperCase()+f.slice(1)}
+          </div>
+        ))}
+      </div>
+      <div className="templates-grid">
+        {filtered.map(t=>{
+          const cat = typeMap[t.type]||"business";
+          return (
+            <div key={t.type} className="tpl-card" onClick={()=>{setInitialDocType(t.type);setPage("generator");}}>
+              <div className="tpl-icon" style={{background:colors[cat]||"var(--gold-dim)"}}>{t.icon}</div>
+              <div className="tpl-name">{t.label}</div>
+              <div className="tpl-desc">Professional {t.label.toLowerCase()} template compliant with Indian law. RAG-powered generation with relevant clause retrieval.</div>
+              <div className="tpl-footer">
+                <span style={{fontSize:11,color:"var(--text3)"}}>EN / HI</span>
+                <span className={`badge badge-${["nda","rental","legalnotice","internship","freelance","mou","affidavit","gst"].includes(t.type)?"green":"gold"}`}>
+                  {["nda","rental","legalnotice","internship","freelance","mou","affidavit","gst"].includes(t.type)?"Free":"Pro"}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI CHAT PAGE
+// ═══════════════════════════════════════════════════════════════
+function Chat() {
+  const toast = useToast();
+  const [messages, setMessages] = useState([{role:"ai",text:"Namaste! 🙏 I'm NyayaAI, your AI-powered legal assistant specialised in Indian law. I can explain legal clauses, answer questions about Indian laws, explain your rights and obligations, and guide you through document generation.\n\nHow can I assist you today?"}]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const msgsRef = useRef(null);
+
+  useEffect(()=>{ msgsRef.current?.scrollTo({top:99999,behavior:"smooth"}); },[messages]);
+
+  const sendMsg = async (text) => {
+    if (!text?.trim()) return;
+    const msg = text.trim();
+    setInput("");
+    setMessages(m=>[...m,{role:"user",text:msg}]);
+    setLoading(true);
+    const history = messages.slice(-8).map(m=>({role:m.role==="ai"?"assistant":"user",content:m.text}));
+    try {
+      const data = await apiCall("POST","/api/chat",{message:msg,history});
+      setMessages(m=>[...m,{role:"ai",text:data.reply}]);
+    } catch(e) {
+      setMessages(m=>[...m,{role:"ai",text:"I'm having trouble connecting to the server. Please check that the backend is running at localhost:8000.\n\nFor demo purposes: **indemnity** means one party compensates the other for losses. **Force majeure** (Section 56, Indian Contract Act) excuses performance due to extraordinary events beyond control."}]);
+    } finally { setLoading(false); }
+  };
+
+  const suggestions = ["What does indemnity clause mean?","Explain force majeure in Indian law","What are tenant rights in Karnataka?","Is non-compete enforceable in India?","How to register an LLP?","What is stamp duty on sale deed?"];
+
+  return (
+    <div style={{padding:"16px 22px",height:"calc(100vh - 54px)",overflow:"hidden"}}>
+      <div className="chat-layout">
+        <div className="chat-panel">
+          <div className="chat-header">
+            <div className="chat-avatar">N</div>
+            <div>
+              <div style={{fontSize:13.5,fontWeight:500,color:"var(--text)"}}>NyayaAI Legal Assistant</div>
+              <div style={{fontSize:11,color:"var(--green)"}}><span className="online-dot"/>Online · Indian Law Specialist</div>
+            </div>
+            <button className="btn btn-ghost btn-sm" style={{marginLeft:"auto"}} onClick={()=>{setMessages([{role:"ai",text:"Chat cleared. How can I help you with Indian legal matters today?"}]);}}>Clear</button>
+          </div>
+
+          <div className="chat-messages" ref={msgsRef}>
+            {messages.map((m,i)=>(
+              <div key={i} className={`msg ${m.role}`}>
+                <div className={`msg-av ${m.role==="ai"?"ai":"user"}`}>{m.role==="ai"?"N":"A"}</div>
+                <div>
+                  <div className="msg-bubble"><Md text={m.text}/></div>
+                  <div className="msg-time">
+                    {i===0?"Just now":i===messages.length-1?"Just now":"Earlier"}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="msg ai">
+                <div className="msg-av ai">N</div>
+                <div><div className="msg-bubble"><div className="typing-dots"><div className="td"/><div className="td"/><div className="td"/></div></div></div>
+              </div>
+            )}
+          </div>
+
+          <div className="chat-footer">
+            <div className="chips-row">
+              {suggestions.map((s,i)=><div key={i} className="chip" onClick={()=>sendMsg(s)}>{s.length>30?s.slice(0,30)+"…":s}</div>)}
+            </div>
+            <div className="chat-input-row">
+              <textarea className="chat-textarea" value={input} onChange={e=>setInput(e.target.value)}
+                placeholder="Ask any legal question…" rows={1}
+                onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg(input);}}} />
+              <button className="send-btn" onClick={()=>sendMsg(input)} disabled={loading||!input.trim()}>
+                <Icon name="send" size={15}/>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:12,overflowY:"auto"}}>
+          <div className="card">
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:12}}>📚 Referenced Laws</div>
+            {[["var(--gold)","Indian Contract Act, 1872","All contracts & agreements"],["var(--blue)","IT Act, 2000","Digital contracts & privacy"],["var(--green)","Transfer of Property Act","Rental & property laws"],["var(--gold)","Companies Act, 2013","Corporate governance"],["var(--blue)","Labour Laws","Employment regulations"],].map(([c,t,d],i)=>(
+              <div key={i} className="activity-item" style={{padding:"7px 0",borderBottom:i<4?"1px solid var(--border)":"none"}}>
+                <div className="act-dot" style={{background:c,flexShrink:0,marginTop:4}}/>
+                <div><div style={{fontSize:12.5,color:"var(--text2)"}}>{t}</div><div style={{fontSize:10.5,color:"var(--text3)"}}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+          <div className="card">
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:10}}>⚡ Quick Templates</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {[["📄","Generate NDA","nda"],["🏠","Rental Agreement","rental"],["💼","Employment Contract","employment"]].map(([icon,label,type],i)=>(
+                <button key={i} className="btn btn-ghost" style={{justifyContent:"flex-start",fontSize:12}} onClick={()=>toast(`Opening ${label}…`)}>
+                  {icon} {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KNOWLEDGE BASE PAGE
+// ═══════════════════════════════════════════════════════════════
+function KnowledgeBase() {
+  const toast = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  const doSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    try {
+      const data = await apiCall("POST","/api/rag/search",{query:searchQuery,doc_type:"",top_k:5});
+      setSearchResults(data.results||[]);
+    } catch(e) {
+      toast("Search failed","error");
+    } finally { setSearching(false); }
+  };
+
+  return (
+    <div className="page fade-in">
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
+        <div>
+          <div className="page-title">Indian Legal Knowledge Base</div>
+          <div className="page-desc">Curated clause database powering RAG-based document generation</div>
+        </div>
+        <span className="badge badge-blue" style={{padding:"5px 12px",fontSize:11.5}}>FAISS + SentenceTransformers</span>
+      </div>
+
+      <div className="stats-grid" style={{marginBottom:20}}>
+        {[["2,840","Total Clauses","Indexed in FAISS"],["28","Indian Acts","Covered"],["17","Document Types","Template categories"],["2","Languages","EN + HI (more soon)"]].map(([v,l,m],i)=>(
+          <div key={i} className="stat-card"><div className="stat-lbl">{l}</div><div className="stat-val gold">{v}</div><div className="stat-meta">{m}</div></div>
+        ))}
+      </div>
+
+      <div className="card" style={{marginBottom:20}}>
+        <div style={{fontSize:13,color:"var(--text)",marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+          🔍 Semantic Clause Search <span className="badge badge-blue">RAG Retrieval</span>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <div className="search-row" style={{flex:1,maxWidth:"none"}}>
+            <Icon name="search" size={13}/>
+            <input placeholder="Search clauses e.g. 'indemnity', 'force majeure', 'non-compete', 'termination'…"
+              value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&doSearch()} />
+          </div>
+          <button className="btn btn-gold" onClick={doSearch} disabled={searching}>
+            {searching?<span className="spinner"/>:"Search"}
+          </button>
+        </div>
+        {searchResults.length>0 && (
+          <div style={{marginTop:12}}>
+            <div style={{fontSize:11,color:"var(--text3)",marginBottom:10}}>Found {searchResults.length} clauses matching "{searchQuery}"</div>
+            {searchResults.map((c,i)=>(
+              <div key={i} className="clause-item" style={{marginBottom:8}}>
+                <div className="clause-header">
+                  <div className="clause-title-text">{c.title}</div>
+                  <span style={{fontSize:10.5,color:"var(--text3)"}}>{c.act}</span>
+                </div>
+                <div className="clause-body">{c.text}</div>
+                <div className="clause-actions">
+                  <button className="btn btn-ghost btn-xs" onClick={()=>toast(`✅ "${c.title}" copied`)}>Copy Clause</button>
+                  <span style={{fontSize:10.5,color:"var(--text3)",marginLeft:6}}>{c.category}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="kb-grid">
+        {[
+          ["⚖️","Indian Contract Act, 1872","Core clauses for offer, acceptance, consideration, breach, and remedies. Foundation of all contracts in India.","342 clauses indexed"],
+          ["🏠","Transfer of Property Act, 1882","Sale, mortgage, lease, gift of immovable property. Rental and tenancy clause library.","218 clauses indexed"],
+          ["💻","Information Technology Act, 2000","Digital contracts, e-signatures, cybercrime, data privacy and PDPB alignment.","156 clauses indexed"],
+          ["👨‍💼","Labour & Employment Laws","Industrial Disputes Act 1947, Payment of Wages Act, ESI Act, Provident Fund Act.","289 clauses indexed"],
+          ["🏢","Companies Act, 2013","Corporate governance, directors' duties, MoA, AoA, partnership, LLP Act 2008.","312 clauses indexed"],
+          ["🛡️","Consumer Protection Act","Consumer rights, unfair trade practices, product liability, e-commerce rules.","94 clauses indexed"],
+          ["💰","GST & Tax Laws","CGST Act 2017, invoice requirements, input tax credit, e-invoicing mandates.","178 clauses indexed"],
+          ["🚀","Startup & VC Agreements","SAFE notes, term sheets, SHA, ESOP policies, vesting schedules.","231 clauses indexed"],
+        ].map(([icon,title,desc,count],i)=>(
+          <div key={i} className="kb-card" onClick={()=>{ setSearchQuery(title.split(",")[0]); setTimeout(doSearch,100); }}>
+            <div className="kb-icon">{icon}</div>
+            <div className="kb-title">{title}</div>
+            <div className="kb-desc">{desc}</div>
+            <div className="kb-count">📎 {count}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENTS PAGE
+// ═══════════════════════════════════════════════════════════════
+function Documents({setPage, setInitialDocType}) {
+  const toast = useToast();
+  const [docs, setDocs] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(()=>{
+    apiCall("GET","/api/documents").then(d=>setDocs(d.documents||[])).catch(()=>{}).finally(()=>setLoading(false));
+  },[]);
+
+  const DEMO_DOCS = [];  // No fake data — show empty state if backend has none
+  const allDocs = docs.length ? docs : DEMO_DOCS;
+  const filtered = allDocs.filter(d=>{
+    const matchFilter = filter==="all"||d.status===filter;
+    const matchSearch = !search||d.title.toLowerCase().includes(search.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  const typeColor = (type) => {
+    const m={rental:"doc-type-prop",employment:"doc-type-emp",internship:"doc-type-emp",freelance:"doc-type-emp",legalnotice:"doc-type-legal",affidavit:"doc-type-legal",poa:"doc-type-legal"};
+    return m[type]||"doc-type-biz";
+  };
+
+  const deleteDoc = async (id) => {
+    if (!confirm("Delete this document?")) return;
+    try { await apiCall("DELETE",`/api/documents/${id}`); setDocs(d=>d.filter(x=>x.id!==id)); toast("🗑️ Deleted","info"); }
+    catch(e){ toast("Delete failed","error"); }
+  };
+
+  return (
+    <div className="page fade-in">
+      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:18}}>
+        <SearchBar placeholder="Search documents…" onChange={setSearch} />
+        {["all","done","draft","review"].map(f=>(
+          <div key={f} className={`badge${filter===f?" badge-gold":" badge-blue"}`} style={{cursor:"pointer",padding:"4px 12px",borderRadius:20,fontSize:12}} onClick={()=>setFilter(f)}>
+            {f==="all"?`All (${allDocs.length})`:f.charAt(0).toUpperCase()+f.slice(1)}
+          </div>
+        ))}
+        <button className="btn btn-gold btn-sm" style={{marginLeft:"auto"}} onClick={()=>setPage("generator")}>
+          <Icon name="plus" size={13}/> New Document
+        </button>
+      </div>
+
+      {loading ? (
+        <div style={{display:"flex",justifyContent:"center",padding:40}}><div className="spinner spinner-lg"/></div>
+      ) : filtered.length===0 ? (
+        <EmptyState icon="📭" title="No documents found" desc="Generate your first legal document" action={<button className="btn btn-gold" onClick={()=>setPage("generator")}><Icon name="plus" size={13}/>New Document</button>} />
+      ) : (
+        <div className="docs-grid">
+          {filtered.map(d=>(
+            <div key={d.id} className="doc-card">
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:8}}>
+                <span className={`doc-type-badge ${typeColor(d.doc_type)}`}>{d.doc_type.toUpperCase().slice(0,8)}</span>
+                <span style={{color:"var(--text3)",cursor:"pointer",fontSize:16}} onClick={()=>toast("Options: Edit, Duplicate, Archive")}>⋯</span>
+              </div>
+              <div className="doc-name">{d.title}</div>
+              <div className="doc-meta">{d.created_at?.slice(0,10)} · {d.state} · {d.pages||"?"} pages</div>
+              <div className="doc-actions">
+                <button className="btn btn-ghost btn-xs" onClick={()=>{ window.open(`${API}/api/export/pdf/${d.id}`,"_blank"); toast("📄 PDF downloading…"); }}>PDF</button>
+                <button className="btn btn-ghost btn-xs" onClick={()=>{ window.open(`${API}/api/export/docx/${d.id}`,"_blank"); toast("📝 DOCX downloading…"); }}>DOCX</button>
+                <button className="btn btn-ghost btn-xs" onClick={()=>setPage("generator")}>Edit</button>
+                <button className="btn btn-danger btn-xs" onClick={()=>deleteDoc(d.id)}><Icon name="trash" size={11}/></button>
+                <span className={`status-pill pill-${d.status} `} style={{marginLeft:"auto",fontSize:"10px"}}>
+                  <span className="status-dot"/>{d.status?.charAt(0).toUpperCase()+d.status?.slice(1)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="card" style={{marginTop:18,padding:"13px 18px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <span style={{fontSize:13,color:"var(--text2)"}}>Storage Used</span>
+          <span style={{fontSize:12,color:"var(--text3)"}}>6.1 MB of 100 MB</span>
+        </div>
+        <div className="progress-bar"><div className="progress-fill" style={{width:"6%",background:"var(--green)"}}/></div>
+        <div style={{fontSize:11.5,color:"var(--text3)",marginTop:5}}>94 MB remaining on Pro plan</div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════════════
+function Admin() {
+  const toast = useToast();
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+
+  useEffect(()=>{
+    apiCall("GET","/api/admin/stats").then(setStats).catch(()=>{});
+    apiCall("GET","/api/admin/users").then(d=>setUsers(d.users||[])).catch(()=>{});
+  },[]);
+
+  const DEMO_STATS = {total_users:1284,total_documents:8392,total_clauses:2840,api_calls_today:89234,revenue_this_month:420000,active_subscriptions:{free:823,pro:398,enterprise:63}};
+  const s = stats||DEMO_STATS;
+
+  return (
+    <div className="page fade-in">
+      <div className="page-header">
+        <div className="page-title">Admin Panel</div>
+        <div className="page-desc">Manage templates, users, clause database, and API usage</div>
+      </div>
+
+      <div className="admin-stats" style={{marginBottom:20}}>
+        {[["1,284","Total Users"],["8,392","Docs Generated"],["2,840","Clauses in DB"],["₹4.2L","Monthly Revenue"]].map(([v,l],i)=>(
+          <div key={i} className="admin-stat"><div className="admin-stat-val">{v}</div><div className="admin-stat-lbl">{l}</div></div>
+        ))}
+      </div>
+
+      <div className="card" style={{marginBottom:16}}>
+        <div className="sh-title" style={{marginBottom:14,fontFamily:"'Playfair Display',serif"}}>Documents Generated (2026)</div>
+        <svg viewBox="0 0 560 130" width="100%" height="130" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(201,168,76,0.3)"/>
+              <stop offset="100%" stopColor="rgba(201,168,76,0)"/>
+            </linearGradient>
+          </defs>
+          {(()=>{
+            const data=[42,68,55,90,78,112,134,98,145,167,189,248];
+            const months=["J","F","M","A","M","J","J","A","S","O","N","D"];
+            const max=Math.max(...data); const w=560,h=110,pad=30;
+            const pts=data.map((v,i)=>{const x=pad+(i*(w-2*pad)/(data.length-1));const y=h-pad-((v/max)*(h-2*pad));return [x,y];});
+            const line=pts.map(([x,y])=>`${x},${y}`).join(" ");
+            const area=`M ${pts[0][0]},${pts[0][1]} L ${pts.slice(1).map(([x,y])=>`${x},${y}`).join(" L ")} L ${pts[pts.length-1][0]},${h-pad} L ${pad},${h-pad} Z`;
+            return <>
+              <path d={area} fill="url(#cg)"/>
+              <polyline points={line} fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              {pts.map(([x,y],i)=><>
+                <circle key={`c${i}`} cx={x} cy={y} r="3" fill="var(--gold)"/>
+                <text key={`t${i}`} x={x} y={h-6} textAnchor="middle" fill="var(--text3)" fontSize="8" fontFamily="DM Sans,sans-serif">{months[i]}</text>
+              </>)}
+            </>;
+          })()}
+        </svg>
+        <div style={{display:"flex",gap:14,marginTop:6,fontSize:12,color:"var(--text2)"}}>
+          <span>📈 <strong style={{color:"var(--green)"}}>+48%</strong> growth YoY</span>
+          <span>Peak: <strong style={{color:"var(--gold2)"}}>December</strong></span>
+          <span>Total 2026: <strong>1,416 docs</strong></span>
+        </div>
+      </div>
+
+      <div className="two-col" style={{marginBottom:16}}>
+        <div className="card">
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:12}}>API Usage</div>
+          {[["Claude API","89,234 / 100,000 calls","89%","var(--red)"],["FAISS Index","2,840 vectors","57%","var(--gold)"],["Storage","8.4 GB / 20 GB","42%","var(--green)"]].map(([l,m,pct,c],i)=>(
+            <div key={i} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                <span style={{color:"var(--text2)"}}>{l}</span><span style={{color:"var(--text3)"}}>{m}</span>
+              </div>
+              <div className="progress-bar"><div className="progress-fill" style={{width:pct,background:c}}/></div>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:12}}>Subscriptions</div>
+          {[["Free",s.active_subscriptions?.free||823,"var(--blue)"],["Pro",s.active_subscriptions?.pro||398,"var(--gold)"],["Enterprise",s.active_subscriptions?.enterprise||63,"var(--green)"]].map(([plan,count,c],i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0",borderBottom:i<2?"1px solid var(--border)":"none"}}>
+              <span style={{fontSize:13,color:"var(--text)"}}>{plan}</span>
+              <span style={{fontSize:18,fontFamily:"'Playfair Display',serif",color:c}}>{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="two-col">
+        <div className="card">
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:12}}>Template Management</div>
+          {DOC_TYPES.slice(0,5).map((t,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0",borderBottom:i<4?"1px solid var(--border)":"none"}}>
+              <span style={{fontSize:13,color:"var(--text)"}}>{t.icon} {t.label}</span>
+              <div style={{display:"flex",gap:6}}>
+                <button className="btn btn-ghost btn-xs" onClick={()=>toast("Opening template editor…")}>Edit</button>
+                <button className="btn btn-danger btn-xs" onClick={()=>toast("Template disabled")}>Disable</button>
+              </div>
+            </div>
+          ))}
+          <button className="btn btn-ghost" style={{width:"100%",justifyContent:"center",fontSize:12.5,marginTop:10}} onClick={()=>toast("Opening template creator…")}>+ Add New Template</button>
+        </div>
+        <div className="card">
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:13.5,color:"var(--text)",marginBottom:12}}>User Management</div>
+          <div className="table-wrap" style={{border:"none",margin:"0 -20px"}}>
+            <div className="table-head" style={{gridTemplateColumns:"1.5fr 1fr 1fr",padding:"8px 20px"}}>
+              <span>User</span><span>Plan</span><span>Docs</span>
+            </div>
+            {(users.length?users:[
+              {name:"Arjun Rao",plan:"pro",docs:142},
+              {name:"Priya Sharma",plan:"free",docs:12},
+              {name:"Rajesh Kumar",plan:"pro",docs:89},
+              {name:"Meera Nair",plan:"enterprise",docs:312},
+            ]).slice(0,4).map((u,i)=>(
+              <div key={i} className="table-row" style={{gridTemplateColumns:"1.5fr 1fr 1fr",padding:"9px 20px"}}>
+                <span className="td-name">{u.name}</span>
+                <span><span className={`status-pill${u.plan==="pro"?" pill-done":u.plan==="enterprise"?" pill-review":" pill-draft"}`}><span className="status-dot"/>{u.plan}</span></span>
+                <span>{u.docs||"—"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROFILE PAGE
+// ═══════════════════════════════════════════════════════════════
+function Profile({setPage}) {
+  const {user} = useAuth();
+  const toast = useToast();
+  const [analytics, setAnalytics] = useState(null);
+  const [form, setForm] = useState({
+    name: user?.name||"", email: user?.email||"",
+    city: user?.city||"", state: user?.state||"Karnataka",
+    profession: user?.profession||"", phone: "", org: ""
+  });
+
+  useEffect(() => {
+    apiCall("GET", "/api/analytics/dashboard")
+      .then(data => setAnalytics(data))
+      .catch(() => {});
+  }, []);
+
+  const stats    = analytics?.stats || {};
+  const totalDocs   = stats.total_documents ?? 0;
+  const queriesUsed = stats.queries_used    ?? user?.queries_used ?? 0;
+  const queriesMax  = stats.queries_limit   ?? user?.queries_limit ?? 50;
+  const timeSaved   = stats.time_saved_hrs  ?? 0;
+  const docsPct     = Math.min(100, Math.round((totalDocs / 100) * 100));  // out of 100 docs shown as %
+  const queryPct    = queriesMax > 0 ? Math.round((queriesUsed / queriesMax) * 100) : 0;
+
+  return (
+    <div className="page fade-in">
+      <div className="profile-layout">
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="profile-card">
+            <div className="profile-avatar">{(user?.name||"G")[0]}</div>
+            <div className="profile-name">{user?.name||"Guest User"}</div>
+            <div className="profile-role">{form.profession} · {form.city}</div>
+            <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+              <span className="badge badge-gold">✦ {user?.plan==="pro"?"Pro Plan":"Free Plan"} · Active</span>
+            </div>
+            <div className="profile-stats">
+              <div><div className="ps-val">{totalDocs}</div><div className="ps-lbl">Docs</div></div>
+              <div><div className="ps-val">{queriesUsed}</div><div className="ps-lbl">Queries</div></div>
+              <div><div className="ps-val">{timeSaved > 0 ? timeSaved + "h" : "0h"}</div><div className="ps-lbl">Saved</div></div>
+            </div>
+            <button className="btn btn-ghost" style={{width:"100%",justifyContent:"center",fontSize:12}} onClick={()=>toast("🔗 Profile link copied!")}>
+              <Icon name="share" size={12}/>Share Profile
+            </button>
+          </div>
+
+          <div className="card">
+            <div style={{fontSize:13,fontWeight:500,color:"var(--text)",marginBottom:12}}>⚡ AI Usage This Month</div>
+            {[
+              ["Documents", `${totalDocs} generated`, `${Math.min(docsPct,100)}%`, "var(--green)"],
+              ["AI Queries", `${queriesUsed} / ${queriesMax}`, `${queryPct}%`, queryPct>85?"var(--red)":"var(--gold)"],
+              ["Storage", `${(totalDocs * 0.3).toFixed(1)} MB used`, `${Math.min(totalDocs * 0.3, 100)}%`, "var(--green)"],
+            ].map(([l,m,w,c],i)=>(
+              <div key={i} style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11.5,marginBottom:4}}>
+                  <span style={{color:"var(--text2)"}}>{l}</span><span style={{color:"var(--text3)"}}>{m}</span>
+                </div>
+                <div className="progress-bar"><div className="progress-fill" style={{width:w,background:c}}/></div>
+              </div>
+            ))}
+            <button className="btn btn-gold" style={{width:"100%",justifyContent:"center",marginTop:10,fontSize:12}} onClick={()=>setPage("pricing")}>Upgrade Plan</button>
+          </div>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="section-block">
+            <div className="section-block-title"><Icon name="user" size={14}/>Personal Information</div>
+            <div className="info-grid">
+              {[["First Name","name",form.name.split(" ")[0]],["Last Name","lname",form.name.split(" ").slice(1).join(" ")],["Email","email",form.email],["Phone","phone",form.phone],["City","city",form.city],["State","state",form.state,"select"]].map(([l,k,v,type])=>(
+                <div key={k} className={`field${k==="email"?" full":""}`}>
+                  <label>{l}</label>
+                  {type==="select"
+                    ? <select value={v} onChange={e=>setForm({...form,[k]:e.target.value})}>{STATES.map(s=><option key={s}>{s}</option>)}</select>
+                    : <input value={v} onChange={e=>setForm({...form,[k]:e.target.value})} />
+                  }
+                </div>
+              ))}
+              <div className="field full"><label>Organisation</label><input value={form.org} onChange={e=>setForm({...form,org:e.target.value})}/></div>
+            </div>
+            <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:14}}>
+              <button className="btn btn-ghost">Discard</button>
+              <button className="btn btn-gold" onClick={()=>toast("✅ Profile saved!","success")}>Save Changes</button>
+            </div>
+          </div>
+
+          <div className="section-block">
+            <div className="section-block-title"><Icon name="shield" size={14}/>Security</div>
+            <div className="info-grid">
+              <div className="field full"><label>Current Password</label><input type="password" placeholder="Enter current password"/></div>
+              <div className="field"><label>New Password</label><input type="password" placeholder="New password"/></div>
+              <div className="field"><label>Confirm Password</label><input type="password" placeholder="Confirm password"/></div>
+            </div>
+            <button className="btn btn-ghost" style={{marginTop:12}} onClick={()=>toast("✅ Password updated!","success")}>Update Password</button>
+          </div>
+
+          <div className="section-block">
+            <div className="section-block-title"><Icon name="dollar" size={14}/>Billing & Subscription</div>
+            <div style={{padding:"10px 0",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div><div style={{fontSize:13.5,color:"var(--text)"}}>Pro Plan</div><div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>₹999/month · Renews 4 Jul 2026</div></div>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setPage("pricing")}>Change Plan</button>
+            </div>
+            <div style={{padding:"10px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div><div style={{fontSize:13.5,color:"var(--text)"}}>Payment Method</div><div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>Visa •••• 4242 · Exp 08/27</div></div>
+              <button className="btn btn-ghost btn-sm" onClick={()=>toast("Update payment method…")}>Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRICING PAGE
+// ═══════════════════════════════════════════════════════════════
+function Pricing() {
+  const toast = useToast();
+  const [billing, setBilling] = useState("monthly");
+  const prices = billing==="annual" ? {free:0,pro:699,ent:3499} : {free:0,pro:999,ent:4999};
+
+  return (
+    <div className="page fade-in">
+      <div style={{textAlign:"center",padding:"4px 0 24px"}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:26,fontWeight:500,color:"var(--text)",marginBottom:7}}>Simple, transparent pricing</div>
+        <div style={{fontSize:13.5,color:"var(--text2)",maxWidth:440,margin:"0 auto 18px",lineHeight:1.6}}>Generate professional Indian legal documents powered by RAG + Claude AI. Cancel anytime.</div>
+        <div style={{display:"inline-flex",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:3,gap:0}}>
+          {["monthly","annual"].map(b=>(
+            <div key={b} style={{padding:"5px 16px",borderRadius:5,fontSize:12.5,cursor:"pointer",color:billing===b?"var(--text)":"var(--text3)",background:billing===b?"var(--bg2)":"transparent",transition:"var(--transition)"}} onClick={()=>setBilling(b)}>
+              {b==="monthly"?"Monthly":"Annual"}{b==="annual"&&<span style={{fontSize:10.5,color:"var(--green)",marginLeft:4}}>Save 30%</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pricing-grid">
+        {[
+          {name:"Starter",desc:"For individuals and students.",price:prices.free,billed:"Free forever",features:[["y","5 documents/month"],["y","8 basic templates"],["y","PDF downloads"],["y","AI chat (50 queries)"],["n","DOCX export"],["n","RAG-powered generation"],["n","Hindi templates"]],btn:"Current Plan",btnCls:""},
+          {name:"Pro",desc:"For freelancers, lawyers, and SMBs.",price:prices.pro,billed:billing==="annual"?"Billed annually · Save ₹3,600":"Billed monthly",featured:true,features:[["y","Unlimited documents"],["y","All 17 templates"],["y","RAG-powered generation"],["y","PDF + DOCX export"],["y","AI chat (1,000 queries)"],["y","Hindi + Kannada templates"],["y","Clause editor & risk analysis"]],btn:"Upgrade to Pro",btnCls:"gold"},
+          {name:"Enterprise",desc:"For law firms and corporates.",price:prices.ent,billed:"Per workspace",features:[["y","Everything in Pro"],["y","25 team seats"],["y","Custom branding"],["y","API access"],["y","Bulk generation"],["y","Dedicated account manager"],["y","SLA & compliance reports"]],btn:"Contact Sales",btnCls:""},
+        ].map((p,i)=>(
+          <div key={i} className={`plan-card${p.featured?" featured":""}`}>
+            {p.featured && <div className="plan-badge">Most Popular</div>}
+            <div className="plan-name" style={p.featured?{color:"var(--gold2)"}:{}}>{p.name}</div>
+            <div className="plan-desc">{p.desc}</div>
+            <div className="plan-price">
+              <span className="plan-currency" style={p.featured?{color:"var(--gold2)"}:{}}>₹</span>
+              <span className={`plan-amount${p.featured?" gold":""}`}>{p.price.toLocaleString("en-IN")}</span>
+              <span className="plan-period">/mo</span>
+            </div>
+            <div style={{fontSize:11,color:"var(--text3)",marginBottom:14}}>{p.billed}</div>
+            <div className="plan-divider"/>
+            <ul className="plan-features">
+              {p.features.map(([y,f],j)=><li key={j}><span className={y==="y"?"feat-y":"feat-n"}>{y==="y"?"✓":"✗"}</span><span style={y!=="y"?{color:"var(--text3)"}:{}}>{f}</span></li>)}
+            </ul>
+            <button className={`plan-btn${p.btnCls?" "+p.btnCls:""}`} onClick={()=>toast(p.name==="Starter"?"You are on Starter plan":p.name==="Pro"?"🎉 Upgrading to Pro…":"Our team will reach out!")}>{p.btn}</button>
+          </div>
+        ))}
+      </div>
+      <div style={{textAlign:"center",marginTop:16,fontSize:12,color:"var(--text3)"}}>
+        All prices exclusive of GST (18%). Secure payments via <span style={{color:"var(--gold2)"}}>Razorpay</span>. UPI · Cards · Net Banking · EMI.
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS PAGE
+// ═══════════════════════════════════════════════════════════════
+function Settings() {
+  const toast = useToast();
+  const {logout} = useAuth();
+  const [activeTab, setActiveTab] = useState("general");
+  const [toggles, setToggles] = useState({autosave:true,rag:true,docTips:true,emailNotif:true,docReady:true,newTemplates:false,billing:true,dataImprove:false,twofa:false});
+  const setToggle = (k,v) => setToggles(t=>({...t,[k]:v}));
+
+  const navItems = [
+    {id:"general",icon:"settings",label:"General"},
+    {id:"notifications",icon:"bell",label:"Notifications"},
+    {id:"language",icon:"chart",label:"Language"},
+    {id:"privacy",icon:"shield",label:"Privacy"},
+    {id:"danger",icon:"alert",label:"Danger Zone"},
+  ];
+
+  return (
+    <div className="page fade-in">
+      <div className="settings-layout">
+        <div className="settings-nav">
+          {navItems.map(n=>(
+            <div key={n.id} className={`sn-item${activeTab===n.id?" active":""}`} onClick={()=>setActiveTab(n.id)}>
+              <Icon name={n.icon} size={13}/>{n.label}
+            </div>
+          ))}
+        </div>
+
+        <div>
+          {activeTab==="general" && (
+            <div className="section-block">
+              <div className="section-block-title">General Settings</div>
+              {[
+                {label:"Default Jurisdiction",desc:"State for generated documents.",ctrl:<select className="select-input" defaultValue="Karnataka">{STATES.slice(0,6).map(s=><option key={s}>{s}</option>)}</select>},
+                {label:"Default Export Format",desc:"PDF or DOCX as default.",ctrl:<select className="select-input"><option>PDF</option><option>DOCX</option></select>},
+                {label:"Auto-save Drafts",desc:"Save every 2 minutes automatically.",ctrl:<Toggle on={toggles.autosave} onChange={v=>setToggle("autosave",v)}/>},
+                {label:"RAG Generation",desc:"Use FAISS clause retrieval for accuracy.",ctrl:<Toggle on={toggles.rag} onChange={v=>setToggle("rag",v)}/>},
+                {label:"Show Document Tips",desc:"Helpful tips while generating.",ctrl:<Toggle on={toggles.docTips} onChange={v=>setToggle("docTips",v)}/>},
+              ].map((r,i)=>(
+                <div key={i} className="setting-row">
+                  <div><label className="setting-lbl">{r.label}</label><p className="setting-desc">{r.desc}</p></div>
+                  {r.ctrl}
+                </div>
+              ))}
+              <button className="btn btn-gold" style={{marginTop:14}} onClick={()=>toast("✅ Settings saved!","success")}>Save Settings</button>
+            </div>
+          )}
+
+          {activeTab==="notifications" && (
+            <div className="section-block">
+              <div className="section-block-title">Notification Preferences</div>
+              {[["Email Notifications","Receive updates via email.",toggles.emailNotif,"emailNotif"],["Document Ready Alerts","Notify when generation completes.",toggles.docReady,"docReady"],["New Template Alerts","Notify when templates are added.",toggles.newTemplates,"newTemplates"],["Billing Reminders","Notify before subscription renews.",toggles.billing,"billing"]].map(([l,d,v,k],i)=>(
+                <div key={i} className="setting-row">
+                  <div><label className="setting-lbl">{l}</label><p className="setting-desc">{d}</p></div>
+                  <Toggle on={v} onChange={val=>setToggle(k,val)}/>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab==="language" && (
+            <div className="section-block">
+              <div className="section-block-title">Language & Region</div>
+              {[["Interface Language","Language for menus and navigation.",<select className="select-input"><option>English</option><option>हिंदी</option></select>],["Document Language","Default for generated documents.",<select className="select-input"><option>English</option><option>हिंदी</option></select>],["Date Format","How dates appear in documents.",<select className="select-input"><option>DD/MM/YYYY</option><option>YYYY-MM-DD</option><option>DD Month YYYY</option></select>],["Currency","Monetary values format.",<select className="select-input"><option>₹ INR</option><option>USD ($)</option></select>]].map(([l,d,ctrl],i)=>(
+                <div key={i} className="setting-row"><div><label className="setting-lbl">{l}</label><p className="setting-desc">{d}</p></div>{ctrl}</div>
+              ))}
+            </div>
+          )}
+
+          {activeTab==="privacy" && (
+            <div className="section-block">
+              <div className="section-block-title">Privacy & Data</div>
+              {[["Improve AI with my data","Allow anonymised data to improve NyayaAI.",toggles.dataImprove,"dataImprove"],["Two-Factor Authentication","OTP verification on login.",toggles.twofa,"twofa"]].map(([l,d,v,k],i)=>(
+                <div key={i} className="setting-row"><div><label className="setting-lbl">{l}</label><p className="setting-desc">{d}</p></div><Toggle on={v} onChange={val=>{setToggle(k,val);if(k==="twofa")toast("2FA setup coming soon");}}/></div>
+              ))}
+              <div className="setting-row">
+                <div><label className="setting-lbl">Export My Data</label><p className="setting-desc">Download all documents as ZIP file.</p></div>
+                <button className="btn btn-ghost btn-sm" onClick={()=>toast("📦 Preparing export…")}>Export</button>
+              </div>
+              <div className="setting-row">
+                <div><label className="setting-lbl">Active Sessions</label><p className="setting-desc">Logged in on 2 devices.</p></div>
+                <button className="btn btn-ghost btn-sm" onClick={()=>toast("✅ Other sessions revoked")}>Revoke Others</button>
+              </div>
+            </div>
+          )}
+
+          {activeTab==="danger" && (
+            <div className="section-block" style={{borderColor:"var(--red-border)"}}>
+              <div className="section-block-title" style={{color:"var(--red)"}}>⚠️ Danger Zone</div>
+              {[["Delete All Documents","Permanently delete all documents. Cannot be undone."],["Cancel Subscription","Cancel Pro plan. Access until billing end."],["Delete Account","Permanently delete your NyayaAI account."]].map(([l,d],i)=>(
+                <div key={i} className="setting-row">
+                  <div><label className="setting-lbl">{l}</label><p className="setting-desc">{d}</p></div>
+                  <button className="btn btn-danger btn-sm" onClick={()=>toast(`⚠️ ${l} — confirmation required`,"warn")}>{l.split(" ")[0]}</button>
+                </div>
+              ))}
+              <div className="setting-row">
+                <div><label className="setting-lbl">Sign Out</label><p className="setting-desc">Sign out of your NyayaAI account.</p></div>
+                <button className="btn btn-ghost btn-sm" onClick={()=>{logout();toast("Signed out","info");}}>
+                  <Icon name="logout" size={13}/>Sign Out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STAMP DUTY MODAL
+// ═══════════════════════════════════════════════════════════════
+function StampDutyModal({onClose}) {
+  const toast = useToast();
+  const [state, setState] = useState("Karnataka");
+  const [docType, setDocType] = useState("Sale Deed");
+  const [value, setValue] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const calc = async () => {
+    if (!value) return;
+    setLoading(true);
+    try {
+      const data = await apiCall("GET",`/api/stamp-duty?state=${encodeURIComponent(state)}&doc_type=${encodeURIComponent(docType)}&value=${value}`);
+      setResult(data);
+    } catch(e) {
+      // fallback
+      const rate={Karnataka:{["Sale Deed"]:0.056,["Rental Agreement"]:0.001},Maharashtra:{["Sale Deed"]:0.06},Delhi:{["Sale Deed"]:0.06}}[state]?.[docType]||0.05;
+      const v=parseFloat(value);
+      setResult({stamp_duty:Math.round(v*rate),registration_fee:Math.min(Math.round(v*0.01),30000),total:Math.round(v*rate)+Math.min(Math.round(v*0.01),30000),rate_percent:(rate*100).toFixed(1)});
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal" style={{width:460}}>
+        <button className="modal-close" onClick={onClose}>✕</button>
+        <div className="modal-title">🏛️ Stamp Duty Calculator</div>
+        <div style={{fontSize:12,color:"var(--text3)",marginBottom:16}}>Estimate stamp duty and registration fees for Indian documents</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <div className="field"><label>State</label>
+            <select value={state} onChange={e=>setState(e.target.value)}>{["Karnataka","Maharashtra","Delhi","Tamil Nadu","Telangana"].map(s=><option key={s}>{s}</option>)}</select>
+          </div>
+          <div className="field"><label>Document Type</label>
+            <select value={docType} onChange={e=>setDocType(e.target.value)}>{["Sale Deed","Rental Agreement","Gift Deed","Power of Attorney","Partnership Deed"].map(t=><option key={t}>{t}</option>)}</select>
+          </div>
+          <div className="field"><label>Property / Transaction Value (₹)</label>
+            <input type="number" value={value} onChange={e=>setValue(e.target.value)} placeholder="E.g. 5000000"/>
+          </div>
+          <button className="btn btn-gold" style={{justifyContent:"center",padding:"9px"}} onClick={calc} disabled={loading}>
+            {loading?<span className="spinner"/>:"Calculate Stamp Duty"}
+          </button>
+        </div>
+        {result && (
+          <div>
+            <div className="stamp-result-grid">
+              <div className="stamp-item"><div className="stamp-lbl">Stamp Duty</div><div className="stamp-val">₹{result.stamp_duty?.toLocaleString("en-IN")}</div><div style={{fontSize:10,color:"var(--text3)"}}>@ {result.rate_percent}%</div></div>
+              <div className="stamp-item"><div className="stamp-lbl">Registration Fee</div><div className="stamp-val blue">₹{result.registration_fee?.toLocaleString("en-IN")}</div><div style={{fontSize:10,color:"var(--text3)"}}>@ 1% (max ₹30k)</div></div>
+              <div className="stamp-item featured"><div className="stamp-lbl">Total Payable</div><div className="stamp-val">₹{result.total?.toLocaleString("en-IN")}</div><div style={{fontSize:10,color:"var(--text3)"}}>Approx. estimate</div></div>
+            </div>
+            <div style={{marginTop:10,fontSize:11.5,color:"var(--text3)",background:"var(--bg3)",padding:"10px 12px",borderRadius:"var(--radius-sm)"}}>⚠️ Indicative estimate only. Actual stamp duty may vary based on circle rate, property type, and state government notifications.</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROOT APP
+// ═══════════════════════════════════════════════════════════════
+function App() {
+  const [page, setPage] = useState("dashboard");
+  const [showAuth, setShowAuth] = useState(false);
+  const [showStamp, setShowStamp] = useState(false);
+  const [initialDocType, setInitialDocType] = useState("nda");
+
+  // Keyboard shortcuts
+  useEffect(()=>{
+    const handler = (e) => {
+      if (e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA") return;
+      if ((e.ctrlKey||e.metaKey)&&e.key==="g"){e.preventDefault();setPage("generator");}
+      if ((e.ctrlKey||e.metaKey)&&e.key==="d"){e.preventDefault();setPage("dashboard");}
+      if ((e.ctrlKey||e.metaKey)&&e.key==="t"){e.preventDefault();setPage("templates");}
+      if ((e.ctrlKey||e.metaKey)&&e.key==="/"){e.preventDefault();setPage("chat");}
+    };
+    document.addEventListener("keydown",handler);
+    return ()=>document.removeEventListener("keydown",handler);
+  },[]);
+
+  const renderPage = () => {
+    switch(page) {
+      case "dashboard": return <Dashboard setPage={setPage} setInitialDocType={setInitialDocType}/>;
+      case "generator": return <Generator initialDocType={initialDocType} setPage={setPage}/>;
+      case "templates": return <Templates setPage={setPage} setInitialDocType={setInitialDocType}/>;
+      case "chat": return <Chat/>;
+      case "knowledgebase": return <KnowledgeBase/>;
+      case "documents": return <Documents setPage={setPage} setInitialDocType={setInitialDocType}/>;
+      case "admin": return <Admin/>;
+      case "profile": return <Profile setPage={setPage}/>;
+      case "pricing": return <Pricing/>;
+      case "settings": return <Settings/>;
+      default: return <Dashboard setPage={setPage} setInitialDocType={setInitialDocType}/>;
+    }
+  };
+
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <div className="app">
+          <Sidebar page={page} setPage={(p)=>{setPage(p);}} onAuthClick={()=>setShowAuth(true)}/>
+          <div className="main-area">
+            <Topbar page={page} setPage={setPage} onAuthClick={()=>setShowAuth(true)}/>
+            {renderPage()}
+          </div>
+        </div>
+        {showAuth && <AuthModal onClose={()=>setShowAuth(false)}/>}
+        {showStamp && <StampDutyModal onClose={()=>setShowStamp(false)}/>}
+      </ToastProvider>
+    </AuthProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
