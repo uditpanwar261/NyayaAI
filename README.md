@@ -4,6 +4,10 @@
 
 ---
 
+## Live Demo
+
+🚀 **Try the project here:** [NyayaAI Live](https://your-project-url.vercel.app)
+
 ## What Is NyayaAI?
 
 NyayaAI is a full-stack web application that generates legally sound Indian documents using **Retrieval-Augmented Generation (RAG)**. Instead of generating documents purely from an LLM, NyayaAI first retrieves the most relevant legal clauses from a curated Indian law database using **FAISS semantic search**, then feeds them to **Claude AI** to produce complete, accurate documents.
