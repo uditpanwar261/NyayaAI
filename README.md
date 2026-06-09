@@ -4,9 +4,9 @@
 
 ---
 
-## Live Demo
+## 🌐 Live Demo
 
-🚀 **Try the project here:** [NyayaAI Live](https://your-project-url.vercel.app](https://nyaya-ai-sable.vercel.app/))
+🚀 **Try NyayaAI here:** [NyayaAI Live](https://nyaya-ai-sable.vercel.app/)
 
 ## What Is NyayaAI?
 
